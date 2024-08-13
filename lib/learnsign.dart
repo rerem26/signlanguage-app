@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import Provider
 import 'main.dart';
 import 'splash_screen.dart';
 import 'signtext.dart';
 import 'learnsign.dart';
 import 'voicelanguage.dart';
-import 'package:provider/provider.dart'; // Import Provider
 
 void main() {
   runApp(
@@ -24,12 +24,11 @@ class SignLanguageApp extends StatelessWidget {
       title: 'Sign Language App',
       theme: ThemeData(
         brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
-        primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Roboto',
         textTheme: TextTheme(),
         appBarTheme: AppBarTheme(
-          color: themeProvider.isDarkMode ? Colors.black : Colors.deepPurple,
+          color: themeProvider.isDarkMode ? Colors.black : Colors.white,
           iconTheme: IconThemeData(
             color: themeProvider.isDarkMode ? Colors.white : Colors.white,
           ),
@@ -40,7 +39,7 @@ class SignLanguageApp extends StatelessWidget {
           ),
         ),
         buttonTheme: ButtonThemeData(
-          buttonColor: themeProvider.isDarkMode ? Colors.grey : Colors.deepPurple,
+          buttonColor: themeProvider.isDarkMode ? Colors.grey : Colors.white,
           textTheme: ButtonTextTheme.primary,
         ),
       ),
@@ -50,7 +49,14 @@ class SignLanguageApp extends StatelessWidget {
   }
 }
 
-class SignLanguageHomePage extends StatelessWidget {
+class SignLanguageHomePage extends StatefulWidget {
+  @override
+  _SignLanguageHomePageState createState() => _SignLanguageHomePageState();
+}
+
+class _SignLanguageHomePageState extends State<SignLanguageHomePage> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -93,7 +99,7 @@ class SignLanguageHomePage extends StatelessWidget {
                 child: SignLanguageBox(
                   title: 'Learn Signs',
                   icon: Icons.school_outlined,
-                  color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                  color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.grey[500]!,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -113,7 +119,7 @@ class SignLanguageHomePage extends StatelessWidget {
                     child: SignLanguageBox(
                       title: 'Sign to Text',
                       icon: Icons.camera_alt_outlined,
-                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.grey[500]!,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -128,7 +134,7 @@ class SignLanguageHomePage extends StatelessWidget {
                     child: SignLanguageBox(
                       title: 'Voice to Sign',
                       icon: Icons.mic_none_outlined,
-                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.grey[300]!,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -138,6 +144,29 @@ class SignLanguageHomePage extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Enter a letter to search',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  String letter = _searchController.text.trim().toUpperCase();
+                  if (letter.isNotEmpty && letter.length == 1 && letter.codeUnitAt(0) >= 65 && letter.codeUnitAt(0) <= 90) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchSign(letter: letter),
+                      ),
+                    );
+                  }
+                },
+                child: Text('Search'),
               ),
               Spacer(),
               Text(
@@ -241,7 +270,7 @@ class _LearnSignState extends State<LearnSign> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Learn Signs'),
-        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.deepPurple,
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
       ),
       body: Stack(
         children: [
@@ -323,6 +352,170 @@ class _LearnSignState extends State<LearnSign> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SignSlideshow extends StatefulWidget {
+  final List<List<int>> wordsIndexes;
+
+  SignSlideshow({required this.wordsIndexes});
+
+  @override
+  _SignSlideshowState createState() => _SignSlideshowState();
+}
+
+class _SignSlideshowState extends State<SignSlideshow> {
+  int _currentIndex = 0;
+  List<String> _letters = [];
+  Timer? _timer;
+  int _currentLetterIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startSlideshow();
+  }
+
+  void _startSlideshow() {
+    _letters = [];
+    for (var indexes in widget.wordsIndexes) {
+      List<String> letters =
+      indexes.map((index) => String.fromCharCode(65 + index)).toList();
+      _letters.addAll(letters);
+    }
+
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      setState(() {
+        if (_currentLetterIndex < _letters.length) {
+          _currentLetterIndex++;
+        } else {
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sign Slideshow'),
+        backgroundColor: Colors.blue[700],
+      ),
+      body: Center(
+        child: AnimatedSwitcher(
+          duration: Duration(seconds: 1),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: _currentLetterIndex < _letters.length
+              ? Column(
+            key: ValueKey<int>(_currentLetterIndex),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Signs for '${_letters[_currentLetterIndex]}'",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 20),
+              _letters[_currentLetterIndex].isNotEmpty
+                  ? Image.asset(
+                'assets/${_letters[_currentLetterIndex]}.png',
+                width: 300,
+                height: 300,
+              )
+                  : SizedBox.shrink(),
+            ],
+          )
+              : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "End of Slideshow",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _currentLetterIndex = 0;
+                  });
+                  _startSlideshow();
+                },
+                child: Text('Restart Slideshow'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SearchSign extends StatelessWidget {
+  final String letter;
+
+  SearchSign({required this.letter});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    String imagePath = 'assets/$letter.png';
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Search Result'),
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.deepPurple,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: themeProvider.isDarkMode
+                ? [Colors.black, Colors.grey[850]!]
+                : [Colors.white, Colors.grey[300]!],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Sign for '$letter'",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              SizedBox(height: 20),
+              Image.asset(imagePath, width: 300, height: 300),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Back'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -91,6 +91,11 @@ flutter:
     - assets/background2.png
     - assets/img2.png
     - assets/loading2.gif
+    - assets/MSASL_classes.json
+    - assets/MSASL_synonym.json
+    - assets/MSASL_test.json
+    - assets/MSASL_train.json
+    - assets/MSASL_val.json
 
 
 

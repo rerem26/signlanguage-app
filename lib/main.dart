@@ -102,7 +102,7 @@ class SignLanguageHomePage extends StatelessWidget {
                 child: SignLanguageBox(
                   title: 'Learn Signs',
                   icon: Icons.school_outlined,
-                  color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                  color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -120,7 +120,7 @@ class SignLanguageHomePage extends StatelessWidget {
                     child: SignLanguageBox(
                       title: 'Sign to Text',
                       icon: Icons.camera_alt_outlined,
-                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                      color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -135,7 +135,7 @@ class SignLanguageHomePage extends StatelessWidget {
                     child: SignLanguageBox(
                       title: 'Voice to Sign',
                       icon: Icons.mic_none_outlined,
-                      color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.blue[300]!,
+                      color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                       onTap: () {
                         Navigator.push(
                           context,
