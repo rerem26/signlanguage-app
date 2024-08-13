@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   runApp(MyApp());
@@ -33,12 +35,21 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   int _currentLetterIndex = 0;
   String _selectedLanguage = 'en_US'; // Default to English
 
+  // Variables to hold the loaded JSON data
+  Map<String, dynamic>? msaslClasses;
+  Map<String, dynamic>? msaslSynonym;
+  Map<String, dynamic>? msaslTest;
+  Map<String, dynamic>? msaslTrain;
+  Map<String, dynamic>? msaslVal;
+
   @override
   void initState() {
     super.initState();
     _initSpeech();
+    _loadAllJsons(); // Load the JSON data when the widget is initialized
   }
 
+  // Initialize Speech-to-Text
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize(
       onError: (val) => setState(() {
@@ -51,6 +62,31 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     setState(() {});
   }
 
+  // Load JSON files
+  Future<Map<String, dynamic>> loadJsonData(String fileName) async {
+    String jsonString = await rootBundle.loadString('assets/$fileName');
+    final jsonResponse = json.decode(jsonString);
+    return jsonResponse;
+  }
+
+  Future<void> _loadAllJsons() async {
+    msaslClasses = await loadJsonData('MSASL_classes.json');
+    msaslSynonym = await loadJsonData('MSASL_synonym.json');
+    msaslTest = await loadJsonData('MSASL_test.json');
+    msaslTrain = await loadJsonData('MSASL_train.json');
+    msaslVal = await loadJsonData('MSASL_val.json');
+
+    // You can now use the loaded JSON data within your widget
+    print(msaslClasses);
+    print(msaslSynonym);
+    print(msaslTest);
+    print(msaslTrain);
+    print(msaslVal);
+
+    setState(() {}); // Call setState to trigger a rebuild if needed
+  }
+
+  // Start listening to voice input
   void _startListening() async {
     if (_speechEnabled) {
       setState(() {
@@ -64,11 +100,13 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     setState(() {});
   }
 
+  // Stop listening to voice input
   void _stopListening() async {
     await _speechToText.stop();
     setState(() {});
   }
 
+  // Handle speech result
   void _onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       _lastWords = result.recognizedWords;
@@ -84,6 +122,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     });
   }
 
+  // Convert recognized words to indexes
   List<List<int>> _convertWordsToIndexes(String words) {
     return words
         .split(' ')
@@ -95,6 +134,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         .toList();
   }
 
+  // Start slideshow with delay
   void _startSlideshowDelayed() {
     if (_timer != null) {
       _timer!.cancel();
@@ -180,7 +220,8 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _speechToText.isListening ? _stopListening : _startListening,
+        onPressed:
+        _speechToText.isListening ? _stopListening : _startListening,
         tooltip: 'Listen',
         child: Icon(_speechToText.isListening ? Icons.mic_off : Icons.mic),
       ),
