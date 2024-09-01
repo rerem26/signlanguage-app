@@ -9,7 +9,7 @@
 
 
     <application
-        android:label="sign_language"
+        android:label="Sign Language"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -29,6 +29,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   List<String> _recognizedWords = [];
   String _error = '';
   Timer? _animationTimer;
+  TextEditingController _textController = TextEditingController();
 
   // Mapping words and letters to their corresponding gesture assets
   final Map<String, String> _gestureAssets = {
@@ -58,10 +59,9 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     'X': 'assets/X.png',
     'Y': 'assets/Y.png',
     'Z': 'assets/Z.png',
-    // Add more word-to-gesture mappings here
     'HELLO': 'assets/HELLO.png',
     'WORLD': 'assets/WORLD.png',
-    // You can add more mappings for words here
+    // Add more word-to-gesture mappings here
   };
 
   @override
@@ -108,9 +108,8 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     if (result.finalResult || result.confidence > 0.8) {
       setState(() {
         _lastWords = result.recognizedWords.toUpperCase();
-        _recognizedWords = _lastWords.split(' '); // Split the recognized speech into words
+        _recognizedWords = _lastWords.split(' ');
 
-        // Start animation when words are recognized
         if (_recognizedWords.isNotEmpty) {
           _startWordAnimation();
         }
@@ -118,9 +117,18 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     }
   }
 
+  // Handle text input from chat box
+  void _onTextSubmitted(String text) {
+    setState(() {
+      _recognizedWords = text.toUpperCase().split(' ');
+      _startWordAnimation();
+    });
+    _textController.clear();
+  }
+
   // Start word animation with a brief delay for smooth transition
   void _startWordAnimation() {
-    _animationTimer?.cancel(); // Cancel any existing timer
+    _animationTimer?.cancel();
 
     int wordIndex = 0;
     _animationTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -128,7 +136,6 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         String word = _recognizedWords[wordIndex];
         wordIndex++;
         setState(() {
-          // Display the gesture corresponding to the recognized word
           _recognizedWords = [word];
         });
       } else {
@@ -144,11 +151,9 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     String currentWord = _recognizedWords.first;
     List<Widget> gestureWidgets = [];
 
-    // Check if the current word has a corresponding gesture
     if (_gestureAssets.containsKey(currentWord)) {
       gestureWidgets.add(Image.asset(_gestureAssets[currentWord]!, width: 200, height: 200));
     } else {
-      // If the word doesn't have a corresponding gesture, break it into letters
       for (var letter in currentWord.split('')) {
         if (_gestureAssets.containsKey(letter)) {
           gestureWidgets.add(Image.asset(_gestureAssets[letter]!, width: 50, height: 50));
@@ -165,6 +170,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   @override
   void dispose() {
     _animationTimer?.cancel();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -188,7 +194,9 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
             Expanded(
               child: Container(
                 padding: EdgeInsets.all(16),
-                child: _speechToText.isListening
+                child: _recognizedWords.isNotEmpty
+                    ? _buildGestureAnimation()
+                    : _speechToText.isListening
                     ? Text(
                   _lastWords,
                   style: TextStyle(fontSize: 24),
@@ -212,20 +220,31 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                   style: TextStyle(color: Colors.red),
                 ),
               ),
-            if (_recognizedWords.isNotEmpty) ...[
-              SizedBox(height: 20),
-              Container(
-                alignment: Alignment.center,
-                child: _buildGestureAnimation(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _textController,
+                      onSubmitted: _onTextSubmitted,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Type a message',
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10), // Space between the TextField and the FAB
+                  FloatingActionButton(
+                    onPressed: _speechToText.isListening ? _stopListening : _startListening,
+                    tooltip: 'Listen',
+                    child: Icon(_speechToText.isListening ? Icons.mic : Icons.mic_off),
+                  ),
+                ],
               ),
-            ],
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _speechToText.isListening ? _stopListening : _startListening,
-        tooltip: 'Listen',
-        child: Icon(_speechToText.isListening ? Icons.mic : Icons.mic_off),
       ),
     );
   }
