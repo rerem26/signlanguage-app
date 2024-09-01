@@ -100,7 +100,7 @@ class SignLanguageHomePage extends StatelessWidget {
               Container(
                 width: 350,
                 child: SignLanguageBox(
-                  title: 'Learn Signs',
+                  title: 'Learn ASL',
                   icon: Icons.school_outlined,
                   color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                   onTap: () {

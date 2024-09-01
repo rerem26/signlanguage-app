@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   runApp(MyApp());
@@ -28,25 +26,48 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String _lastWords = '';
-  List<List<int>> _wordsIndexes = [];
+  List<String> _recognizedWords = [];
   String _error = '';
-  List<String> _letters = [];
-  Timer? _timer;
-  int _currentLetterIndex = 0;
-  String _selectedLanguage = 'en_US'; // Default to English
+  Timer? _animationTimer;
 
-  // Variables to hold the loaded JSON data
-  Map<String, dynamic>? msaslClasses;
-  Map<String, dynamic>? msaslSynonym;
-  Map<String, dynamic>? msaslTest;
-  Map<String, dynamic>? msaslTrain;
-  Map<String, dynamic>? msaslVal;
+  // Mapping words and letters to their corresponding gesture assets
+  final Map<String, String> _gestureAssets = {
+    'A': 'assets/A.png',
+    'B': 'assets/B.png',
+    'C': 'assets/C.png',
+    'D': 'assets/D.png',
+    'E': 'assets/E.png',
+    'F': 'assets/F.png',
+    'G': 'assets/G.png',
+    'H': 'assets/H.png',
+    'I': 'assets/I.png',
+    'J': 'assets/J.png',
+    'K': 'assets/K.png',
+    'L': 'assets/L.png',
+    'M': 'assets/M.png',
+    'N': 'assets/N.png',
+    'O': 'assets/O.png',
+    'P': 'assets/P.png',
+    'Q': 'assets/Q.png',
+    'R': 'assets/R.png',
+    'S': 'assets/S.png',
+    'T': 'assets/T.png',
+    'U': 'assets/U.png',
+    'V': 'assets/V.png',
+    'W': 'assets/W.png',
+    'X': 'assets/X.png',
+    'Y': 'assets/Y.png',
+    'Z': 'assets/Z.png',
+    // Add more word-to-gesture mappings here
+    'HELLO': 'assets/HELLO.png',
+    'WORLD': 'assets/WORLD.png',
+    // You can add more mappings for words here
+  };
 
   @override
   void initState() {
     super.initState();
     _initSpeech();
-    _loadAllJsons(); // Load the JSON data when the widget is initialized
   }
 
   // Initialize Speech-to-Text
@@ -55,35 +76,8 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
       onError: (val) => setState(() {
         _error = val.errorMsg;
       }),
-      onStatus: (val) => setState(() {
-        // handle status changes if needed
-      }),
     );
     setState(() {});
-  }
-
-  // Load JSON files
-  Future<Map<String, dynamic>> loadJsonData(String fileName) async {
-    String jsonString = await rootBundle.loadString('assets/$fileName');
-    final jsonResponse = json.decode(jsonString);
-    return jsonResponse;
-  }
-
-  Future<void> _loadAllJsons() async {
-    msaslClasses = await loadJsonData('MSASL_classes.json');
-    msaslSynonym = await loadJsonData('MSASL_synonym.json');
-    msaslTest = await loadJsonData('MSASL_test.json');
-    msaslTrain = await loadJsonData('MSASL_train.json');
-    msaslVal = await loadJsonData('MSASL_val.json');
-
-    // You can now use the loaded JSON data within your widget
-    print(msaslClasses);
-    print(msaslSynonym);
-    print(msaslTest);
-    print(msaslTrain);
-    print(msaslVal);
-
-    setState(() {}); // Call setState to trigger a rebuild if needed
   }
 
   // Start listening to voice input
@@ -91,10 +85,12 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     if (_speechEnabled) {
       setState(() {
         _lastWords = '';
+        _recognizedWords.clear();
       });
       await _speechToText.listen(
         onResult: _onSpeechResult,
-        localeId: _selectedLanguage,
+        partialResults: true,
+        listenMode: ListenMode.dictation,
       );
     }
     setState(() {});
@@ -103,53 +99,72 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   // Stop listening to voice input
   void _stopListening() async {
     await _speechToText.stop();
+    _animationTimer?.cancel();
     setState(() {});
   }
 
   // Handle speech result
   void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() {
-      _lastWords = result.recognizedWords;
-      _wordsIndexes = _convertWordsToIndexes(_lastWords);
+    if (result.finalResult || result.confidence > 0.8) {
+      setState(() {
+        _lastWords = result.recognizedWords.toUpperCase();
+        _recognizedWords = _lastWords.split(' '); // Split the recognized speech into words
 
-      // Initialize _letters with the recognized words
-      _letters = _lastWords.split('');
+        // Start animation when words are recognized
+        if (_recognizedWords.isNotEmpty) {
+          _startWordAnimation();
+        }
+      });
+    }
+  }
 
-      // Start slideshow automatically when words are recognized
-      if (_wordsIndexes.isNotEmpty) {
-        _startSlideshowDelayed();
+  // Start word animation with a brief delay for smooth transition
+  void _startWordAnimation() {
+    _animationTimer?.cancel(); // Cancel any existing timer
+
+    int wordIndex = 0;
+    _animationTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (wordIndex < _recognizedWords.length) {
+        String word = _recognizedWords[wordIndex];
+        wordIndex++;
+        setState(() {
+          // Display the gesture corresponding to the recognized word
+          _recognizedWords = [word];
+        });
+      } else {
+        _animationTimer!.cancel();
       }
     });
   }
 
-  // Convert recognized words to indexes
-  List<List<int>> _convertWordsToIndexes(String words) {
-    return words
-        .split(' ')
-        .map((word) => word
-        .toUpperCase()
-        .codeUnits
-        .map((unit) => unit - 65)
-        .toList())
-        .toList();
-  }
+  // Build the gesture animation widget
+  Widget _buildGestureAnimation() {
+    if (_recognizedWords.isEmpty) return SizedBox.shrink();
 
-  // Start slideshow with delay
-  void _startSlideshowDelayed() {
-    if (_timer != null) {
-      _timer!.cancel();
+    String currentWord = _recognizedWords.first;
+    List<Widget> gestureWidgets = [];
+
+    // Check if the current word has a corresponding gesture
+    if (_gestureAssets.containsKey(currentWord)) {
+      gestureWidgets.add(Image.asset(_gestureAssets[currentWord]!, width: 200, height: 200));
+    } else {
+      // If the word doesn't have a corresponding gesture, break it into letters
+      for (var letter in currentWord.split('')) {
+        if (_gestureAssets.containsKey(letter)) {
+          gestureWidgets.add(Image.asset(_gestureAssets[letter]!, width: 50, height: 50));
+        }
+      }
     }
 
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        _currentLetterIndex++;
-      });
-    });
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: gestureWidgets,
+    );
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _animationTimer?.cancel();
     super.dispose();
   }
 
@@ -197,33 +212,20 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                   style: TextStyle(color: Colors.red),
                 ),
               ),
-            if (_letters.isNotEmpty) ...[
+            if (_recognizedWords.isNotEmpty) ...[
               SizedBox(height: 20),
               Container(
                 alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Signs for '${_letters[_currentLetterIndex % _letters.length]}'",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+                child: _buildGestureAnimation(),
               ),
             ],
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-        _speechToText.isListening ? _stopListening : _startListening,
+        onPressed: _speechToText.isListening ? _stopListening : _startListening,
         tooltip: 'Listen',
-        child: Icon(_speechToText.isListening ? Icons.mic_off : Icons.mic),
+        child: Icon(_speechToText.isListening ? Icons.mic : Icons.mic_off),
       ),
     );
   }

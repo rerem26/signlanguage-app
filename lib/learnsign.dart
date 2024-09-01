@@ -4,7 +4,6 @@ import 'package:provider/provider.dart'; // Import Provider
 import 'main.dart';
 import 'splash_screen.dart';
 import 'signtext.dart';
-import 'learnsign.dart';
 import 'voicelanguage.dart';
 
 void main() {
@@ -97,7 +96,7 @@ class _SignLanguageHomePageState extends State<SignLanguageHomePage> {
               Container(
                 width: 350,
                 child: SignLanguageBox(
-                  title: 'Learn Signs',
+                  title: 'Learn ASL',
                   icon: Icons.school_outlined,
                   color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.grey[500]!,
                   onTap: () {
@@ -269,7 +268,7 @@ class _LearnSignState extends State<LearnSign> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Learn Signs'),
+        title: Text('Learn ASL'),
         backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
       ),
       body: Stack(
