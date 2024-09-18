@@ -30,11 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.10.0+1
-  permission_handler: ^10.0.0
   flutter_animate: ^2.0.0
-  http:
+  camera: ^0.10.0
+  permission_handler: ^10.0.0
   provider: ^6.0.0
+  http: ^0.13.3
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -94,13 +94,11 @@ flutter:
     - assets/background2.png
     - assets/img2.png
     - assets/loading2.gif
-    - assets/MSASL_classes.json
-    - assets/MSASL_synonym.json
-    - assets/MSASL_test.json
-    - assets/MSASL_train.json
-    - assets/MSASL_val.json
     - assets/datasets/filipino.py
     - assets/datasets/english.py
+    - assets/train_translation_model.py
+    - assets/translate.py
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

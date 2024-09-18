@@ -1,19 +1,28 @@
-# translate.py
-
+from flask import Flask, request, jsonify
 import joblib
 
-# Load the saved model and vectorizer
+# Load the trained model and vectorizer
 model = joblib.load('translation_model.pkl')
 vectorizer = joblib.load('vectorizer.pkl')
 
-# Function to translate an English word to Filipino
-def translate_english_to_filipino(word):
-    word_vector = vectorizer.transform([word])  # Convert the word to a vector
-    prediction = model.predict(word_vector)  # Predict the Filipino translation
-    return prediction[0]
+app = Flask(__name__)
 
-# Test the translation function
-if __name__ == "__main__":
-    sample_word = input("Enter an English word to translate: ").upper()
-    translation = translate_english_to_filipino(sample_word)
-    print(f"The Filipino translation of '{sample_word}' is '{translation}'")
+@app.route('/translate', methods=['POST'])
+def translate():
+    data = request.json
+
+    if 'gesture' not in data:
+        return jsonify({'error': 'No gesture provided'}), 400
+
+    gesture = data['gesture']
+
+    # Vectorize the input gesture
+    gesture_vector = vectorizer.transform([gesture])
+
+    # Get the translation from the model
+    translation = model.predict(gesture_vector)[0]
+
+    return jsonify({'translation': translation})
+
+if __name__ == '__main__':
+    app.run(debug=True)
