@@ -99,7 +99,8 @@ flutter:
     - assets/MSASL_test.json
     - assets/MSASL_train.json
     - assets/MSASL_val.json
-
+    - assets/filipino.py
+    - assets/english.py
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
