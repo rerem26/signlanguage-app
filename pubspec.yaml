@@ -42,6 +42,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   speech_to_text: ^6.1.1
   avatar_glow: ^2.0.2
+  tflite_v2: ^1.0.0
+
 
 
 dev_dependencies:
