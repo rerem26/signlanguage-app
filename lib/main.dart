@@ -107,7 +107,7 @@ class SignLanguageHomePage extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LearnSign()),
+                      MaterialPageRoute(builder: (context) => QuizScreen()),
                     );
                   },
                 ),
