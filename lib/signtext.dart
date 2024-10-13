@@ -15,6 +15,7 @@ class _SignTextState extends State<SignText> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isCameraPermissionGranted = false;
+  bool _isUsingFrontCamera = true; // Initial state using front camera
   String detectedGesture = "No gesture detected";
 
   // Extensive list of English and Tagalog sign language words
@@ -89,22 +90,29 @@ class _SignTextState extends State<SignText> {
   void initState() {
     super.initState();
     _initCamera();
-    _simulateWordDetection(); // Simulate word detection
+    _simulateWordDetection();
   }
 
   Future<void> _initCamera() async {
     await _requestCameraPermission();
     if (_isCameraPermissionGranted) {
       _cameras = await availableCameras();
-      if (_cameras != null && _cameras!.isNotEmpty) {
-        _cameraController = CameraController(
-          _cameras![0],
-          ResolutionPreset.high,
-        );
-        await _cameraController?.initialize();
-        setState(() {});
-      }
+      _switchCamera();
     }
+  }
+
+  void _switchCamera() async {
+    CameraDescription selectedCamera = _cameras!.firstWhere(
+          (camera) => camera.lensDirection == (_isUsingFrontCamera ? CameraLensDirection.front : CameraLensDirection.back),
+      orElse: () => _cameras!.first,
+    );
+
+    _cameraController = CameraController(
+      selectedCamera,
+      ResolutionPreset.high,
+    );
+    await _cameraController?.initialize();
+    setState(() {});
   }
 
   Future<void> _requestCameraPermission() async {
@@ -119,7 +127,6 @@ class _SignTextState extends State<SignText> {
   void _simulateWordDetection() {
     Timer.periodic(Duration(seconds: 2), (timer) {
       setState(() {
-        // Simulate the detection of words one by one
         detectedGesture = words[currentWordIndex];
         currentWordIndex = (currentWordIndex + 1) % words.length;
       });
@@ -134,7 +141,7 @@ class _SignTextState extends State<SignText> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context); // Access the theme provider
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -146,6 +153,17 @@ class _SignTextState extends State<SignText> {
         iconTheme: IconThemeData(
           color: themeProvider.isDarkMode ? Colors.white : Colors.black,
         ),
+        actions: [
+          IconButton(
+            icon: Icon(_isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
+            onPressed: () {
+              setState(() {
+                _isUsingFrontCamera = !_isUsingFrontCamera;
+                _switchCamera(); // Switch between front and back camera
+              });
+            },
+          )
+        ],
       ),
       body: Column(
         children: [

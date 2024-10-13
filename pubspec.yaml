@@ -94,10 +94,13 @@ flutter:
     - assets/background2.png
     - assets/img2.png
     - assets/loading2.gif
-    - assets/datasets/filipino.py
-    - assets/datasets/english.py
-    - assets/train_translation_model.py
-    - assets/translate.py
+    - assets/letters/
+    - assets/ISL_Gifs/
+
+  #    - assets/datasets/filipino.py
+#    - assets/datasets/english.py
+#    - assets/train_translation_model.py
+#    - assets/translate.py
 
 
 

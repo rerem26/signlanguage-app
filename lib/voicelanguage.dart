@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:async';
+import 'package:avatar_glow/avatar_glow.dart'; // Ensure avatar_glow is added in pubspec.yaml
+import 'utils.dart'; // Import your utils class or file
 
 void main() {
   runApp(MyApp());
@@ -24,228 +26,208 @@ class Voice_To_Sign extends StatefulWidget {
 
 class _VoiceToSignState extends State<Voice_To_Sign> {
   SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
-  String _lastWords = '';
-  List<String> _recognizedWords = [];
-  String _error = '';
-  Timer? _animationTimer;
-  TextEditingController _textController = TextEditingController();
-
-  // Mapping words and letters to their corresponding gesture assets
-  final Map<String, String> _gestureAssets = {
-    'A': 'assets/A.png',
-    'B': 'assets/B.png',
-    'C': 'assets/C.png',
-    'D': 'assets/D.png',
-    'E': 'assets/E.png',
-    'F': 'assets/F.png',
-    'G': 'assets/G.png',
-    'H': 'assets/H.png',
-    'I': 'assets/I.png',
-    'J': 'assets/J.png',
-    'K': 'assets/K.png',
-    'L': 'assets/L.png',
-    'M': 'assets/M.png',
-    'N': 'assets/N.png',
-    'O': 'assets/O.png',
-    'P': 'assets/P.png',
-    'Q': 'assets/Q.png',
-    'R': 'assets/R.png',
-    'S': 'assets/S.png',
-    'T': 'assets/T.png',
-    'U': 'assets/U.png',
-    'V': 'assets/V.png',
-    'W': 'assets/W.png',
-    'X': 'assets/X.png',
-    'Y': 'assets/Y.png',
-    'Z': 'assets/Z.png',
-    'HELLO': 'assets/HELLO.png',
-    'WORLD': 'assets/WORLD.png',
-    // Add more word-to-gesture mappings here
-  };
+  bool _isListening = false;
+  String _text = '';
+  String _img = 'space';
+  String _ext = '.png';
+  String _path = 'assets/letters/';
+  String _displaytext = 'Press the button and start speaking...';
+  int _state = 0;
 
   @override
   void initState() {
     super.initState();
-    _initSpeech();
-  }
-
-  // Initialize Speech-to-Text
-  void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize(
-      onError: (val) => setState(() {
-        _error = val.errorMsg;
-      }),
-    );
-    setState(() {});
-  }
-
-  // Start listening to voice input
-  void _startListening() async {
-    if (_speechEnabled) {
-      setState(() {
-        _lastWords = '';
-        _recognizedWords.clear();
-      });
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        partialResults: true,
-        listenMode: ListenMode.dictation,
-      );
-    }
-    setState(() {});
-  }
-
-  // Stop listening to voice input
-  void _stopListening() async {
-    await _speechToText.stop();
-    _animationTimer?.cancel();
-    setState(() {});
-  }
-
-  // Handle speech result
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    if (result.finalResult || result.confidence > 0.8) {
-      setState(() {
-        _lastWords = result.recognizedWords.toUpperCase();
-        _recognizedWords = _lastWords.split(' ');
-
-        if (_recognizedWords.isNotEmpty) {
-          _startWordAnimation();
-        }
-      });
-    }
-  }
-
-  // Handle text input from chat box
-  void _onTextSubmitted(String text) {
-    setState(() {
-      _recognizedWords = text.toUpperCase().split(' ');
-      _startWordAnimation();
-    });
-    _textController.clear();
-  }
-
-  // Start word animation with a brief delay for smooth transition
-  void _startWordAnimation() {
-    _animationTimer?.cancel();
-
-    int wordIndex = 0;
-    _animationTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (wordIndex < _recognizedWords.length) {
-        String word = _recognizedWords[wordIndex];
-        wordIndex++;
-        setState(() {
-          _recognizedWords = [word];
-        });
-      } else {
-        _animationTimer!.cancel();
-      }
-    });
-  }
-
-  // Build the gesture animation widget
-  Widget _buildGestureAnimation() {
-    if (_recognizedWords.isEmpty) return SizedBox.shrink();
-
-    String currentWord = _recognizedWords.first;
-    List<Widget> gestureWidgets = [];
-
-    if (_gestureAssets.containsKey(currentWord)) {
-      gestureWidgets.add(Image.asset(_gestureAssets[currentWord]!, width: 200, height: 200));
-    } else {
-      for (var letter in currentWord.split('')) {
-        if (_gestureAssets.containsKey(letter)) {
-          gestureWidgets.add(Image.asset(_gestureAssets[letter]!, width: 50, height: 50));
-        }
-      }
-    }
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: gestureWidgets,
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationTimer?.cancel();
-    _textController.dispose();
-    super.dispose();
+    _speechToText = SpeechToText();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Voice to Sign Language'),
+        title: const Text(
+          'Voice to Sign Language',
+          style: TextStyle(
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        backgroundColor: Colors.white,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Recognized words:',
-                style: TextStyle(fontSize: 20.0),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(16),
-                child: _recognizedWords.isNotEmpty
-                    ? _buildGestureAnimation()
-                    : _speechToText.isListening
-                    ? Text(
-                  _lastWords,
-                  style: TextStyle(fontSize: 24),
-                )
-                    : _speechEnabled
-                    ? Text(
-                  'Tap the microphone to start listening...',
-                  style: TextStyle(fontSize: 24),
-                )
-                    : Text(
-                  'Speech not available',
-                  style: TextStyle(fontSize: 24),
+      body: RefreshIndicator(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.fromLTRB(0, 0.0, 0, 0.0),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Image(
+                      image: AssetImage('$_path$_img$_ext'),
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                      key: ValueKey<int>(_state),
+                      width: MediaQuery.of(context).size.width,
+                      height: (4 / 3) * MediaQuery.of(context).size.width,
+                    ),
+                  ),
+                  width: MediaQuery.of(context).size.width,
+                  height: (4 / 3) * MediaQuery.of(context).size.width,
                 ),
-              ),
-            ),
-            if (_error.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Error: $_error',
-                  style: TextStyle(color: Colors.red),
+                const Divider(
+                  thickness: 2,
+                  color: Colors.black,
+                  indent: 20,
+                  endIndent: 20,
                 ),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      onSubmitted: _onTextSubmitted,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Type a message',
+                Container(
+                  padding: const EdgeInsets.fromLTRB(30.0, 0, 30.0, 0),
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    child: Container(
+                      height: 0.04 * MediaQuery.of(context).size.height,
+                      child: Text(
+                        _displaytext,
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10), // Space between the TextField and the FAB
-                  FloatingActionButton(
-                    onPressed: _speechToText.isListening ? _stopListening : _startListening,
-                    tooltip: 'Listen',
-                    child: Icon(_speechToText.isListening ? Icons.mic : Icons.mic_off),
-                  ),
-                ],
-              ),
+                ),
+                const Divider(
+                  thickness: 2,
+                  color: Colors.black,
+                  indent: 20,
+                  endIndent: 20,
+                ),
+              ],
             ),
-          ],
+          ),
+        ),
+        onRefresh: () {
+          return Future.delayed(
+            const Duration(seconds: 1),
+                () {
+              setState(() {
+                _text = '';
+                _path = 'assets/letters/';
+                _img = 'space';
+                _ext = '.png';
+                _displaytext = 'Press the button and start speaking...';
+                _state = 0;
+              });
+            },
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: AvatarGlow(
+        animate: _isListening,
+        glowColor: Theme.of(context).primaryColor,
+        endRadius: 75.0,
+        duration: const Duration(milliseconds: 2000),
+        repeatPauseDuration: const Duration(milliseconds: 100),
+        repeat: true,
+        child: FloatingActionButton(
+          onPressed: _listen,
+          child: Icon(_isListening ? Icons.mic : Icons.mic_none),
+          foregroundColor: Colors.white,
         ),
       ),
     );
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speechToText.initialize(
+        onStatus: (val) => print('onStatus: $val'),
+        onError: (val) => print('onError: $val'),
+        debugLogging: true,
+      );
+
+      if (available) {
+        setState(() => _isListening = true);
+        // Here we specify English or Filipino as supported languages
+        _speechToText.listen(
+          onResult: (val) => setState(() {
+            _text = val.recognizedWords;
+          }),
+          localeId: 'en-US', // Use 'fil-PH' for Filipino, change dynamically if needed
+        );
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speechToText.stop();
+      translation(_text);
+      _state = 0;
+    }
+  }
+
+  void translation(String _text) async {
+    _displaytext = '';
+    String speechStr = _text.toLowerCase();
+
+    List<String> strArray = speechStr.split(" ");
+    for (String content in strArray) {
+      if (words.contains(content)) {
+        String file = content;
+        int idx = words.indexOf(content);
+        int _duration = int.parse(words.elementAt(idx + 1));
+
+        setState(() {
+          _state += 1;
+          _displaytext += content;
+          _path = 'assets/ISL_Gifs/';
+          _img = file;
+          _ext = '.gif';
+        });
+        await Future.delayed(Duration(milliseconds: _duration));
+      } else {
+        for (var i = 0; i < content.length; i++) {
+          if (letters.contains(content[i])) {
+            String char = content[i];
+            setState(() {
+              _state += 1;
+              _displaytext += char;
+              _path = 'assets/letters/';
+              _img = char;
+              _ext = '.png';
+            });
+            await Future.delayed(const Duration(milliseconds: 1500));
+          } else {
+            String letter = content[i];
+            setState(() {
+              _state += 1;
+              _displaytext += letter;
+              _path = 'assets/letters/';
+              _img = 'space';
+              _ext = '.png';
+            });
+            await Future.delayed(const Duration(milliseconds: 1000));
+          }
+        }
+      }
+      setState(() {
+        _state += 1;
+        _displaytext += " ";
+        _path = 'assets/letters/';
+        _img = 'space';
+        _ext = '.png';
+      });
+      await Future.delayed(const Duration(milliseconds: 1000));
+    }
   }
 }
