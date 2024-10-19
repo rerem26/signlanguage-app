@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'dart:math'; // To generate random questions
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import Provider
-import 'main.dart';
-import 'splash_screen.dart';
-import 'signtext.dart';
-import 'voicelanguage.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(
@@ -14,6 +10,17 @@ void main() {
       child: SignLanguageApp(),
     ),
   );
+}
+
+class ThemeProvider extends ChangeNotifier {
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
 }
 
 class SignLanguageApp extends StatelessWidget {
@@ -26,25 +33,9 @@ class SignLanguageApp extends StatelessWidget {
         brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Roboto',
-        textTheme: TextTheme(),
-        appBarTheme: AppBarTheme(
-          color: themeProvider.isDarkMode ? Colors.black : Colors.white,
-          iconTheme: IconThemeData(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.white,
-          ),
-          titleTextStyle: TextStyle(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        buttonTheme: ButtonThemeData(
-          buttonColor: themeProvider.isDarkMode ? Colors.grey : Colors.white,
-          textTheme: ButtonTextTheme.primary,
-        ),
       ),
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: SignLanguageHomePage(),
     );
   }
 }
@@ -55,8 +46,6 @@ class SignLanguageHomePage extends StatefulWidget {
 }
 
 class _SignLanguageHomePageState extends State<SignLanguageHomePage> {
-  final TextEditingController _searchController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -65,7 +54,7 @@ class _SignLanguageHomePageState extends State<SignLanguageHomePage> {
         title: Text(
           'Sign Language App',
           style: TextStyle(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.white,
+            color: themeProvider.isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         centerTitle: true,
@@ -78,109 +67,17 @@ class _SignLanguageHomePageState extends State<SignLanguageHomePage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: themeProvider.isDarkMode
-                ? [Colors.black, Colors.grey[850]!]
-                : [Colors.white, Colors.grey[300]!],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Spacer(),
-              Container(
-                width: 350,
-                child: SignLanguageBox(
-                  title: 'Start Quiz',
-                  icon: Icons.quiz_outlined,
-                  color: themeProvider.isDarkMode ? Colors.blue[800]! : Colors.grey[500]!,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuizScreen(),
-                      ),
-                    );
-                  },
-                ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuizScreen(),
               ),
-              Spacer(),
-              Text(
-                'Powered by Intellitech Solutions',
-                style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SignLanguageBox extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  SignLanguageBox({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      elevation: 8.0,
-      borderRadius: BorderRadius.circular(15),
-      shadowColor: Colors.black45,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          height: 100,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 6,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 36,
-                color: Colors.white,
-              ),
-              SizedBox(height: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
+          child: Text('Start Quiz'),
         ),
       ),
     );
@@ -194,37 +91,48 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   List<String> _letters = List.generate(26, (index) => String.fromCharCode(65 + index));
-  late List<String> _randomLetters; // Store randomized letters
-  late String _currentLetter;
-  int _score = 0;
+  List<Map<String, dynamic>> _textQuestions = [
+    {
+      'question': 'The social beliefs, traditions, art, history, and recreation that occurs among people who are brought together by sign language and influenced by deafness.',
+      'options': ['Deaf Culture', 'Deaf Community', 'Deaf Association', 'Deafhood'],
+      'answer': 'Deaf Culture'
+    },
+    // More questions...
+  ];
+
+  late List<Map<String, dynamic>> _questions;
   int _currentQuestionIndex = 0;
   int _correctAnswers = 0;
-  int _wrongAnswers = 0;
-  List<String> _options = [];
   String? _selectedAnswer;
   bool _showFeedback = false;
   final Random _random = Random();
-  final int _totalQuestions = 10; // Each quiz will have 10 questions
+  final int _totalQuestions = 10;
+  Timer? _timer;
+  int _timeLeft = 30;
 
   @override
   void initState() {
     super.initState();
     _initializeQuiz();
+    _startTimer();
   }
 
   void _initializeQuiz() {
-    _randomLetters = _letters..shuffle(); // Shuffle letters to randomize questions
-    _randomLetters = _randomLetters.sublist(0, _totalQuestions); // Pick 10 random letters
-    _loadNextQuestion();
-  }
+    List<Map<String, dynamic>> letterImageQuestions = _letters.map((letter) {
+      return {
+        'question': 'What is the meaning of this sign language?',
+        'image': 'assets/$letter.png',
+        'options': _generateOptions(letter),
+        'answer': letter
+      };
+    }).toList();
 
-  void _loadNextQuestion() {
-    setState(() {
-      _currentLetter = _randomLetters[_currentQuestionIndex];
-      _options = _generateOptions(_currentLetter);
-      _showFeedback = false;
-      _selectedAnswer = null;
-    });
+    _questions = [...letterImageQuestions, ..._textQuestions]..shuffle();
+    _questions = _questions.sublist(0, _totalQuestions);
+    _currentQuestionIndex = 0;
+    _correctAnswers = 0;
+    _selectedAnswer = null;
+    _showFeedback = false;
   }
 
   List<String> _generateOptions(String correctLetter) {
@@ -239,19 +147,38 @@ class _QuizScreenState extends State<QuizScreen> {
     return options;
   }
 
-  void _checkAnswer(String selectedLetter) {
+  void _startTimer() {
+    _timer?.cancel();
     setState(() {
-      _selectedAnswer = selectedLetter;
+      _timeLeft = 30;
+    });
+
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_timeLeft > 0) {
+          _timeLeft--;
+        } else {
+          _timer?.cancel();
+          _showQuizResults();
+        }
+      });
+    });
+  }
+
+  void _checkAnswer(String? selectedAnswer) {
+    setState(() {
+      _selectedAnswer = selectedAnswer;
       _showFeedback = true;
-      if (selectedLetter == _currentLetter) {
+      if (selectedAnswer == _questions[_currentQuestionIndex]['answer']) {
         _correctAnswers++;
-      } else {
-        _wrongAnswers++;
       }
-      Future.delayed(Duration(seconds: 2), () {
+      Future.delayed(Duration(seconds: 1), () {
         if (_currentQuestionIndex < _totalQuestions - 1) {
-          _currentQuestionIndex++;
-          _loadNextQuestion();
+          setState(() {
+            _currentQuestionIndex++;
+            _showFeedback = false;
+            _selectedAnswer = null;
+          });
         } else {
           _showQuizResults();
         }
@@ -260,76 +187,99 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _showQuizResults() {
+    int totalWrong = _totalQuestions - _correctAnswers;
+    int completion = ((_currentQuestionIndex + 1) / _totalQuestions * 100).round();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            "Quiz Finished!",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: EdgeInsets.all(16.0),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 45,
+                backgroundColor: Colors.blue,
+                child: Text(
+                  "${_correctAnswers * 10} pt",
+                  style: TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Your Score",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+            ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "Results",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
               SizedBox(height: 10),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Correct Answers: ',
-                      style: TextStyle(color: Colors.green, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(
-                      text: '$_correctAnswers',
-                      style: TextStyle(color: Colors.green, fontSize: 18),
-                    ),
-                  ],
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 28),
+                      SizedBox(height: 4),
+                      Text(
+                        "$_correctAnswers Correct",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Icon(Icons.cancel, color: Colors.red, size: 28),
+                      SizedBox(height: 4),
+                      Text(
+                        "$totalWrong Wrong",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              SizedBox(height: 5),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Wrong Answers: ',
-                      style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(
-                      text: '$_wrongAnswers',
-                      style: TextStyle(color: Colors.red, fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               Text(
-                "Total Questions: $_totalQuestions",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                "Completion: $completion%",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.blueGrey),
+              ),
+              SizedBox(height: 20),
+              Divider(),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.refresh, color: Colors.blue, size: 32),
+                    onPressed: () {
+                      setState(() {
+                        _initializeQuiz();
+                        _startTimer();
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    tooltip: "Play Again",
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.home, color: Colors.purple, size: 32),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                    tooltip: "Home",
+                  ),
+                ],
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              child: Text(
-                "Restart",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
-              ),
-              onPressed: () {
-                setState(() {
-                  _score = 0;
-                  _currentQuestionIndex = 0;
-                  _correctAnswers = 0;
-                  _wrongAnswers = 0;
-                  _initializeQuiz();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
@@ -337,30 +287,60 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isImageQuestion = _questions[_currentQuestionIndex].containsKey('image');
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Sign Language Quiz'),
         backgroundColor: Colors.blue[700],
+        actions: [
+          Container(
+            padding: EdgeInsets.all(8.0),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: _timeLeft / 30,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+                Text(
+                  "$_timeLeft",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            SizedBox(height: 20),
             Text(
               "Question ${_currentQuestionIndex + 1} of $_totalQuestions",
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 20),
             Text(
-              "What is the meaning of this sign language?",
+              _questions[_currentQuestionIndex]['question'],
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 20),
-            Image.asset('assets/$_currentLetter.png', width: 300, height: 300),
+            if (isImageQuestion)
+              Image.asset(
+                _questions[_currentQuestionIndex]['image'],
+                width: 300,
+                height: 300,
+              ),
             SizedBox(height: 20),
             Column(
-              children: _options.asMap().entries.map((entry) {
+              children: (_questions[_currentQuestionIndex]['options'] as List<String>).asMap().entries.map((entry) {
                 int index = entry.key;
                 String option = entry.value;
                 String label = ['A', 'B', 'C', 'D'][index];
@@ -370,7 +350,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 IconData? icon;
 
                 if (_showFeedback) {
-                  if (option == _currentLetter) {
+                  if (option == _questions[_currentQuestionIndex]['answer']) {
                     backgroundColor = Colors.green[100]!;
                     textColor = Colors.green;
                     icon = Icons.check_circle_outline;

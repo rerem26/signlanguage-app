@@ -57,6 +57,14 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
 
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/ic_launcher.png"
+  adaptive_icon_background: "#FFA500"
+  adaptive_icon_foreground: "assets/ic_launcher.png"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -96,6 +104,7 @@ flutter:
     - assets/loading2.gif
     - assets/letters/
     - assets/ISL_Gifs/
+    - assets/ic_launcher.png
 
   #    - assets/datasets/filipino.py
 #    - assets/datasets/english.py
