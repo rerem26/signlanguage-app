@@ -142,7 +142,44 @@ class _QuizScreenState extends State<QuizScreen> {
       'options': ['American Sign Language (ASL)', 'Latin', 'Interpretive', 'Electric larynx'],
       'answer': 'American Sign Language (ASL)'
     },
+    {
+      'question': 'What is the sign language for "HELLO"?',
+      'options': ['Wave hand near forehead', 'Point to the ground', 'Cross arms', 'Make a fist'],
+      'answer': 'Wave hand near forehead',
+      'image': 'assets/hello.png'
+    },
+    {
+      'question': 'What is the sign language for "GOODBYE"?',
+      'options': ['Wave hand', 'Thumbs up', 'Point to mouth', 'Cross fingers'],
+      'answer': 'Wave hand',
+      'image': 'assets/goodbye.png'
+    },
+    {
+      'question': 'What is the sign language for "PLEASE"?',
+      'options': ['Move hand in a circular motion on chest', 'Point to the sky', 'Clap hands', 'Tap your nose'],
+      'answer': 'Move hand in a circular motion on chest',
+      'image': 'assets/please.png'
+    },
+    {
+      'question': 'What is the sign language for "NO"?',
+      'options': ['Tap index and middle finger together', 'Shake head', 'Thumbs down', 'Wave both hands'],
+      'answer': 'Tap index and middle finger together',
+      'image': 'assets/no.png'
+    },
+    {
+      'question': 'What is the sign language for "YES"?',
+      'options': ['Make a fist and nod', 'Wave hand', 'Tap shoulder', 'Cross arms'],
+      'answer': 'Make a fist and nod',
+      'image': 'assets/yes.png'
+    },
+    {
+      'question': 'What is the sign language for "THANK YOU"?',
+      'options': ['Move hand outward from chin', 'Thumbs up', 'Cross fingers', 'Wave hand'],
+      'answer': 'Move hand outward from chin',
+      'image': 'assets/thankyou.png'
+    }
   ];
+
 
   late List<Map<String, dynamic>> _questions;
   int _currentQuestionIndex = 0;

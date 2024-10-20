@@ -105,6 +105,12 @@ flutter:
     - assets/letters/
     - assets/ISL_Gifs/
     - assets/ic_launcher.png
+    - assets/hello.png
+    - assets/goodbye.png
+    - assets/no.png
+    - assets/yes.png
+    - assets/please.png
+    - assets/thankyou.png
 
   #    - assets/datasets/filipino.py
 #    - assets/datasets/english.py
