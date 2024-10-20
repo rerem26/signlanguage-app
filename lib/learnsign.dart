@@ -97,7 +97,51 @@ class _QuizScreenState extends State<QuizScreen> {
       'options': ['Deaf Culture', 'Deaf Community', 'Deaf Association', 'Deafhood'],
       'answer': 'Deaf Culture'
     },
-    // More questions...
+    {
+      'question': 'The letters of the English alphabet represented by hand signs, as used in ASL.',
+      'options': ['Fingerspelling', 'American Sign Language', 'American Manual Alphabet', 'Deaf Culture'],
+      'answer': 'American Manual Alphabet'
+    },
+    {
+      'question': 'A system of communication using visual gestures and signs.',
+      'options': ['Fingerspelling', 'Home Sign', 'Sign Language', 'Facial Expression'],
+      'answer': 'Sign Language'
+    },
+    {
+      'question': 'An action that conveys meaning.',
+      'options': ['Sign', 'Symptom', 'Oralism', 'Martha\'s Vineyard Sign Language'],
+      'answer': 'Sign'
+    },
+    {
+      'question': 'Method of teaching the Deaf by learning to understand and produce spoken language.',
+      'options': ['Sign Language', 'Oralism', 'Manualism', 'Audism'],
+      'answer': 'Oralism'
+    },
+    {
+      'question': 'A form of communication developed by a Deaf person who has no access to learning a sign language.',
+      'options': ['Home Sign', 'Martha\'s Vineyard Sign Language', 'Critical Period', 'Sign Language'],
+      'answer': 'Home Sign'
+    },
+    {
+      'question': 'A village sign language practiced in a small community on Martha\'s Vineyard Island where a hereditary form of deafness was common.',
+      'options': ['Sign', 'Home Sign Languages', 'Old French Sign Language', 'Martha\'s Vineyard Sign Language'],
+      'answer': 'Martha\'s Vineyard Sign Language'
+    },
+    {
+      'question': 'Using letter signs to spell out a word in sign language.',
+      'options': ['American Manual Alphabet', 'Fingerspelling', 'Manualism', 'Martha\'s Vineyard Sign Language'],
+      'answer': 'Fingerspelling'
+    },
+    {
+      'question': 'The use of sign language to educate the Deaf.',
+      'options': ['Oralism', 'American Manual Alphabet', 'Fingerspelling', 'Manualism'],
+      'answer': 'Manualism'
+    },
+    {
+      'question': 'A visual language used by Deaf people in the United States and parts of Canada that uses hand shape, movement, and facial expression to convey meaning.',
+      'options': ['American Sign Language (ASL)', 'Latin', 'Interpretive', 'Electric larynx'],
+      'answer': 'American Sign Language (ASL)'
+    },
   ];
 
   late List<Map<String, dynamic>> _questions;
@@ -346,7 +390,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 String label = ['A', 'B', 'C', 'D'][index];
 
                 Color backgroundColor = Colors.transparent;
-                Color textColor = Colors.black;
+                Color textColor = Colors.white;
                 IconData? icon;
 
                 if (_showFeedback) {
