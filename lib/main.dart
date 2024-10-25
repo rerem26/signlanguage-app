@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'alphabets.dart';
 import 'splash_screen.dart';
 import 'signtext.dart';
 import 'learnsign.dart';
@@ -93,16 +94,34 @@ class SignLanguageHomePage extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Spacer(),
               Container(
-                width: 350,
+                width: double.infinity,
                 child: SignLanguageBox(
-                  title: 'Learn ASL',
-                  icon: Icons.school_outlined,
+                  title: 'Learn Alphabets',
+                  icon: Icons.menu_book_outlined,
+                  color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Alphabets()), // Navigate to the Alphabets screen
+                    );
+                  },
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(height: 20), // Centered space between "Learn Alphabet" and "Learn ASL"
+              ),
+              Container(
+                width: double.infinity,
+                child: SignLanguageBox(
+                  title: 'Quiz',
+                  icon: Icons.quiz_rounded,
                   color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                   onTap: () {
                     Navigator.push(
@@ -112,12 +131,15 @@ class SignLanguageHomePage extends StatelessWidget {
                   },
                 ),
               ),
-              SizedBox(height: 20),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(height: 20), // Centered space between "Learn ASL" and the row of boxes
+              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 165,
+                    width: MediaQuery.of(context).size.width / 2 - 22, // Dynamic width for consistency
                     child: SignLanguageBox(
                       title: 'Sign to Text',
                       icon: Icons.camera_alt_outlined,
@@ -130,9 +152,8 @@ class SignLanguageHomePage extends StatelessWidget {
                       },
                     ),
                   ),
-                  SizedBox(width: 20),
                   Container(
-                    width: 165,
+                    width: MediaQuery.of(context).size.width / 2 - 22, // Dynamic width for consistency
                     child: SignLanguageBox(
                       title: 'Voice to Sign',
                       icon: Icons.mic_none_outlined,
@@ -163,6 +184,7 @@ class SignLanguageHomePage extends StatelessWidget {
     );
   }
 }
+
 
 class SignLanguageBox extends StatelessWidget {
   final String title;

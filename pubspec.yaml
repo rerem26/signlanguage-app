@@ -31,10 +31,12 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_animate: ^2.0.0
-  camera: ^0.10.0
+  camera: ^0.9.8+1
   permission_handler: ^10.0.0
   provider: ^6.0.0
   http: ^0.13.3
+  tflite_flutter: ^0.9.0
+  tflite_flutter_helper: ^0.2.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -103,7 +105,7 @@ flutter:
     - assets/img2.png
     - assets/loading2.gif
     - assets/letters/
-    - assets/ISL_Gifs/
+    - assets/gif/
     - assets/ic_launcher.png
     - assets/hello.png
     - assets/goodbye.png
@@ -112,10 +114,6 @@ flutter:
     - assets/please.png
     - assets/thankyou.png
 
-  #    - assets/datasets/filipino.py
-#    - assets/datasets/english.py
-#    - assets/train_translation_model.py
-#    - assets/translate.py
 
 
 
