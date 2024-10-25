@@ -273,6 +273,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
     showDialog(
       context: context,
+      barrierDismissible: false, // Prevents closing when tapping outside
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
@@ -345,15 +346,15 @@ class _QuizScreenState extends State<QuizScreen> {
                         _initializeQuiz();
                         _startTimer();
                       });
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Closes the dialog
                     },
                     tooltip: "Play Again",
                   ),
                   IconButton(
                     icon: Icon(Icons.home, color: Colors.purple, size: 32),
                     onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Closes the dialog
+                      Navigator.of(context).pop(); // Goes back to home
                     },
                     tooltip: "Home",
                   ),
@@ -365,6 +366,7 @@ class _QuizScreenState extends State<QuizScreen> {
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

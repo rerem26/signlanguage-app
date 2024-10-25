@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:async';
-import 'package:avatar_glow/avatar_glow.dart'; // Ensure avatar_glow is added in pubspec.yaml
 import 'utils.dart'; // Import your utils class or file
 
 void main() {
@@ -106,130 +104,118 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(0, 0.0, 0, 0.0),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Image(
-                      image: AssetImage('$_path$_img$_ext'),
-                      fit: BoxFit.contain,
-                      alignment: Alignment.center,
-                      key: ValueKey<int>(_state),
-                      width: MediaQuery.of(context).size.width,
-                      height: (4 / 3) * MediaQuery.of(context).size.width,
-                    ),
-                  ),
-                  width: MediaQuery.of(context).size.width,
-                  height: (4 / 3) * MediaQuery.of(context).size.width,
-                ),
-                const Divider(
-                  thickness: 2,
-                  color: Colors.black,
-                  indent: 20,
-                  endIndent: 20,
-                ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(30.0, 0, 30.0, 0),
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    child: Container(
-                      height: 0.04 * MediaQuery.of(context).size.height,
-                      child: Text(
-                        _displaytext,
-                        style: const TextStyle(
-                          fontSize: 20.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
-                        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(0, 0.0, 0, 0.0),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Image(
+                        image: AssetImage('$_path$_img$_ext'),
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        key: ValueKey<int>(_state),
+                        width: MediaQuery.of(context).size.width,
+                        height: (4 / 3) * MediaQuery.of(context).size.width,
                       ),
                     ),
+                    width: MediaQuery.of(context).size.width,
+                    height: (4 / 3) * MediaQuery.of(context).size.width,
                   ),
-                ),
-                const Divider(
-                  thickness: 2,
-                  color: Colors.black,
-                  indent: 20,
-                  endIndent: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  child: RawKeyboardListener(
-                    focusNode: FocusNode(),
-                    onKey: (event) {
-                      if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                        _submitMessage();
-                      }
-                    },
-                    child: TextField(
-                      controller: _textController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey[200], // Light grey background for the TextField
-                        hintText: 'Enter message',
-                        hintStyle: TextStyle(
-                          color: Colors.grey, // Subtle hint color
-                        ),
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.mic, color: Colors.purple), // Microphone icon
-                              onPressed: _listen, // Calls the _listen function when pressed
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.send, color: Colors.purple), // Send icon
-                              onPressed: _submitMessage, // Submit message when the send button is pressed
-                            ),
-                          ],
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0), // Rounded corners
-                          borderSide: BorderSide.none, // No border line for a clean look
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                          borderSide: BorderSide(
-                            color: Colors.purple, // Purple border when the field is focused
-                            width: 2.0,
+                  const Divider(
+                    thickness: 2,
+                    color: Colors.black,
+                    indent: 20,
+                    endIndent: 20,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(30.0, 0, 30.0, 0),
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      child: Container(
+                        height: 0.04 * MediaQuery.of(context).size.height,
+                        child: Text(
+                          _displaytext,
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Padding inside the TextField
-                      ),
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.black, // Black text color
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const Divider(
+                    thickness: 2,
+                    color: Colors.black,
+                    indent: 20,
+                    endIndent: 20,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        onRefresh: () {
-          return Future.delayed(
-            const Duration(seconds: 1),
-                () {
-              setState(() {
-                _text = '';
-                _path = 'assets/letters/';
-                _img = 'space';
-                _ext = '.png';
-                _displaytext = 'Press the button and start speaking...';
-                _state = 0;
-              });
-            },
-          );
-        },
+          // This is the section that will be at the bottom
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: RawKeyboardListener(
+              focusNode: FocusNode(),
+              onKey: (event) {
+                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                  _submitMessage();
+                }
+              },
+              child: TextField(
+                controller: _textController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[200], // Light grey background for the TextField
+                  hintText: 'Enter message',
+                  hintStyle: TextStyle(
+                    color: Colors.grey, // Subtle hint color
+                  ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.mic, color: Colors.black), // Microphone icon
+                        onPressed: _listen, // Calls the _listen function when pressed
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.send, color: Colors.blue), // Send icon
+                        onPressed: _submitMessage, // Submit message when the send button is pressed
+                      ),
+                    ],
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0), // Rounded corners
+                    borderSide: BorderSide.none, // No border line for a clean look
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide(
+                      color: Colors.black, // Purple border when the field is focused
+                      width: 2.0,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Padding inside the TextField
+                ),
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black, // Black text color
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
