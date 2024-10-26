@@ -177,6 +177,86 @@ class _QuizScreenState extends State<QuizScreen> {
       'options': ['Move hand outward from chin', 'Thumbs up', 'Cross fingers', 'Wave hand'],
       'answer': 'Move hand outward from chin',
       'image': 'assets/thankyou.png'
+    },
+    {
+      "question": "A manual alphabet used by deaf individuals to spell out words in English, where each handshape represents a letter.",
+      "options": ["Finger Spelling", "Braille", "Closed Captioning", "Interpretive Signing"],
+      "answer": "Finger Spelling"
+    },
+    {
+      "question": "The Filipino Sign Language (FSL) is the primary language used by the Deaf community in which country?",
+      "options": ["Philippines", "Thailand", "United States", "Japan"],
+      "answer": "Philippines"
+    },
+    {
+      "question": "What term describes the use of both speech and sign language simultaneously?",
+      "options": ["Total Communication", "Manualism", "Cued Speech", "Auditory-Oral Method"],
+      "answer": "Total Communication"
+    },
+    {
+      "question": "Which of these elements is NOT a key feature of sign language?",
+      "options": ["Handshape", "Tone of voice", "Movement", "Facial expression"],
+      "answer": "Tone of voice"
+    },
+    {
+      "question": "Which hand orientation, movement, and space technique is commonly used to distinguish meaning in sign language?",
+      "options": ["Morphology", "Iconicity", "Grammar", "Spatial Referencing"],
+      "answer": "Spatial Referencing"
+    },
+    {
+      "question": "What is the term for using hands to represent specific words, letters, or phrases in sign language?",
+      "options": ["Signing", "Oralism", "Articulation", "Dactylology"],
+      "answer": "Signing"
+    },
+    {
+      "question": "Which form of communication involves a combination of lip-reading, speech, and natural gestures?",
+      "options": ["Oralism", "Cued Speech", "Manualism", "Total Communication"],
+      "answer": "Oralism"
+    },
+    {
+      "question": "Which handshape is used to represent the letter 'A' in the American Sign Language alphabet?",
+      "options": ["Closed fist with thumb out", "Open hand", "V-shape", "Thumb between index and middle fingers"],
+      "answer": "Closed fist with thumb out"
+    },
+    {
+      "question": "What is the primary reason facial expressions are important in sign language?",
+      "options": ["To indicate emotional tone", "To replace spoken words", "To indicate the beginning of a sentence", "For fashion"],
+      "answer": "To indicate emotional tone"
+    },
+    {
+      "question": "In sign language, what is the purpose of spatial referencing?",
+      "options": ["To represent past or future events", "To increase speed of signing", "To emphasize nouns", "To indicate locations or persons"],
+      "answer": "To indicate locations or persons"
+    },
+    {
+      "question": "What is a classifier in sign language?",
+      "options": ["A handshape used to represent a specific object", "An alphabet letter", "A technique for louder signing", "A system for teaching sign language"],
+      "answer": "A handshape used to represent a specific object"
+    },
+    {
+      "question": "Which of these refers to the movement of hands to form specific signs in sign language?",
+      "options": ["Signing", "Typing", "Voicing", "Acting"],
+      "answer": "Signing"
+    },
+    {
+      "question": "What does the non-dominant hand usually do in two-handed signs?",
+      "options": ["Supports the dominant hand", "Stays idle", "Moves freely", "Indicates tense"],
+      "answer": "Supports the dominant hand"
+    },
+    {
+      "question": "Which language is considered the first visual language that includes its own grammar and syntax, used by Deaf communities?",
+      "options": ["American Sign Language (ASL)", "Written English", "Cued Speech", "Morse Code"],
+      "answer": "American Sign Language (ASL)"
+    },
+    {
+      "question": "What aspect of sign language allows for the expression of abstract concepts and ideas?",
+      "options": ["Iconicity", "Spatial Referencing", "Grammar", "Symbolic Representation"],
+      "answer": "Symbolic Representation"
+    },
+    {
+      "question": "What is the name of the system that helps Deaf individuals learn to read lips and understand speech sounds?",
+      "options": ["Cued Speech", "Braille", "Finger Spelling", "Oralism"],
+      "answer": "Cued Speech"
     }
   ];
 

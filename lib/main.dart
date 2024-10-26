@@ -5,7 +5,7 @@ import 'splash_screen.dart';
 import 'signtext.dart';
 import 'learnsign.dart';
 import 'voicelanguage.dart';
-
+import 'practice_asl.dart'; // Import the practice_asl.dart file
 
 void main() {
   runApp(
@@ -96,50 +96,48 @@ class SignLanguageHomePage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Spacer(),
-              Container(
-                width: double.infinity,
-                child: SignLanguageBox(
-                  title: 'Learn Alphabets',
-                  icon: Icons.menu_book_outlined,
-                  color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Alphabets()), // Navigate to the Alphabets screen
-                    );
-                  },
-                ),
+              SignLanguageBox(
+                title: 'Practice ASL',
+                icon: Icons.menu_book_outlined,
+                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PracticeASL()), // Navigate to PracticeASL screen
+                  );
+                },
               ),
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(height: 20), // Centered space between "Learn Alphabet" and "Learn ASL"
+              SizedBox(height: 20),
+              SignLanguageBox(
+                title: 'Learn Alphabets',
+                icon: Icons.menu_book_outlined,
+                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Alphabets()), // Navigate to the Alphabets screen
+                  );
+                },
               ),
-              Container(
-                width: double.infinity,
-                child: SignLanguageBox(
-                  title: 'Quiz',
-                  icon: Icons.quiz_rounded,
-                  color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => QuizScreen()),
-                    );
-                  },
-                ),
+              SizedBox(height: 20),
+              SignLanguageBox(
+                title: 'Quiz',
+                icon: Icons.quiz_rounded,
+                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => QuizScreen()),
+                  );
+                },
               ),
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(height: 20), // Centered space between "Learn ASL" and the row of boxes
-              ),
+              SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width / 2 - 22, // Dynamic width for consistency
+                  Expanded(
                     child: SignLanguageBox(
                       title: 'Sign to Text',
                       icon: Icons.camera_alt_outlined,
@@ -152,8 +150,8 @@ class SignLanguageHomePage extends StatelessWidget {
                       },
                     ),
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width / 2 - 22, // Dynamic width for consistency
+                  SizedBox(width: 16),
+                  Expanded(
                     child: SignLanguageBox(
                       title: 'Voice to Sign',
                       icon: Icons.mic_none_outlined,
@@ -184,7 +182,6 @@ class SignLanguageHomePage extends StatelessWidget {
     );
   }
 }
-
 
 class SignLanguageBox extends StatelessWidget {
   final String title;

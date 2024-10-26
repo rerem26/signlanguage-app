@@ -37,6 +37,7 @@ dependencies:
   http: ^0.13.3
   tflite_flutter: ^0.9.0
   tflite_flutter_helper: ^0.2.1
+  video_player: ^2.5.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -113,6 +114,7 @@ flutter:
     - assets/yes.png
     - assets/please.png
     - assets/thankyou.png
+    - assets/videos/fsl.mp4
 
 
 

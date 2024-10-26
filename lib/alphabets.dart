@@ -39,32 +39,37 @@ class Alphabets extends StatelessWidget {
           itemBuilder: (context, index) {
             String imagePath;
             String displayText;
+            String tutorialText;
 
             if (index < 10) {
-              // First 10 items are numbers (0-9)
+              // Numbers (0-9)
               imagePath = 'assets/letters/${index}.png';
               displayText = 'Number $index';
+              tutorialText = 'For the number $index, hold up $index finger(s) on one hand.';
             } else if (index >= 10 && index < 36) {
-              // Next 26 items are uppercase letters (A-Z)
+              // Uppercase letters (A-Z)
               String letter = String.fromCharCode(65 + (index - 10)); // ASCII for A-Z
               imagePath = 'assets/$letter.png';
               displayText = 'Letter $letter';
+              tutorialText = 'For letter $letter, use the handshape shown, forming the shape of "$letter".';
             } else {
-              // Remaining items are lowercase letters (a-z)
+              // Lowercase letters (a-z)
               String lowercaseLetter = String.fromCharCode(97 + (index - 36)); // ASCII for a-z
               imagePath = 'assets/letters/$lowercaseLetter.png';
               displayText = 'Letter $lowercaseLetter';
+              tutorialText = 'For letter $lowercaseLetter, follow the handshape indicated.';
             }
 
             return GestureDetector(
               onTap: () {
-                // Navigate to the detail screen with the image path and description
+                // Navigate to the detail screen with the image path and tutorial description
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => AlphabetDetailScreen(
                       imagePath: imagePath,
                       description: displayText,
+                      tutorial: tutorialText,
                     ),
                   ),
                 );
@@ -119,8 +124,9 @@ class Alphabets extends StatelessWidget {
 class AlphabetDetailScreen extends StatelessWidget {
   final String imagePath;
   final String description;
+  final String tutorial;
 
-  AlphabetDetailScreen({required this.imagePath, required this.description});
+  AlphabetDetailScreen({required this.imagePath, required this.description, required this.tutorial});
 
   @override
   Widget build(BuildContext context) {
@@ -182,10 +188,20 @@ class AlphabetDetailScreen extends StatelessWidget {
               ),
               SizedBox(height: 10),
               Text(
-                'This section provides information and a visual representation for $description.',
+                tutorial,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Tip: Practice each letter slowly. Focus on hand position and movements as shown.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue[900],
+                  fontStyle: FontStyle.italic,
                 ),
                 textAlign: TextAlign.center,
               ),
