@@ -18,7 +18,12 @@ class MyApp extends StatelessWidget {
 class PracticeASL extends StatelessWidget {
   final List<String> aslPhrases = [
     'Learn Basic Phrases in FSL',
-    'Thank you',
+    'Family Signs in FSL',
+    'Home Signs in FSL',
+    'Drinks and Food Signs in FSL',
+    'Basic Greetings in FSL',
+    'Alphabet in FSL',
+    '40 Conversational Words in ASL',
   ];
 
   @override
@@ -27,9 +32,7 @@ class PracticeASL extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Practice ASL',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue[800],
       ),
@@ -47,23 +50,29 @@ class PracticeASL extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
+                String videoPath = '';
                 if (aslPhrases[index] == 'Learn Basic Phrases in FSL') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ASLVideoPlayerScreen(),
-                    ),
-                  );
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ASLPracticeDetail(
-                        phrase: aslPhrases[index],
-                      ),
-                    ),
-                  );
+                  videoPath = 'assets/videos/fsl.mp4';
+                } else if (aslPhrases[index] == 'Family Signs in FSL') {
+                  videoPath = 'assets/videos/family.mp4';
+                } else if (aslPhrases[index] == 'Home Signs in FSL') {
+                  videoPath = 'assets/videos/home.mp4';
+                } else if (aslPhrases[index] == 'Drinks and Food Signs in FSL') {
+                  videoPath = 'assets/videos/food.mp4';
+                } else if (aslPhrases[index] == 'Basic Greetings in FSL') {
+                  videoPath = 'assets/videos/greetings.mp4';
+                } else if (aslPhrases[index] == 'Alphabet in FSL') {
+                  videoPath = 'assets/videos/alphabet.mp4';
+                } else if (aslPhrases[index] == '40 Conversational Words in ASL') {
+                  videoPath = 'assets/videos/beginner.mp4';
                 }
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ASLVideoPlayerScreen(videoPath: videoPath),
+                  ),
+                );
               },
               child: Card(
                 elevation: 5,
@@ -100,30 +109,53 @@ class PracticeASL extends StatelessWidget {
 }
 
 class ASLVideoPlayerScreen extends StatefulWidget {
+  final String videoPath;
+
+  ASLVideoPlayerScreen({required this.videoPath});
+
   @override
   _ASLVideoPlayerScreenState createState() => _ASLVideoPlayerScreenState();
 }
 
 class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
   late VideoPlayerController _controller;
-  bool _isVideoReady = false;
-  bool _isError = false;
+  bool _isInitialized = false;
+  double _volume = 0.5;
+  bool _showVolumeSlider = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/videos/fsl.mp4')
+    _initializeVideoPlayer();
+  }
+
+  void _initializeVideoPlayer() {
+    _controller = VideoPlayerController.asset(widget.videoPath)
       ..initialize().then((_) {
         setState(() {
-          _isVideoReady = true;
+          _isInitialized = true;
         });
+        _controller.setVolume(_volume);
         _controller.play();
       }).catchError((error) {
-        print('Error loading video: $error');
-        setState(() {
-          _isError = true;
-        });
+        print("Error initializing video: $error");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading video. Please check the file path.')),
+        );
       });
+  }
+
+  void _toggleVolumeSlider() {
+    setState(() {
+      _showVolumeSlider = !_showVolumeSlider;
+    });
+  }
+
+  String _getVolumeLabel() {
+    if (_volume == 0) return "Mute";
+    if (_volume <= 0.3) return "Low";
+    if (_volume <= 0.7) return "Medium";
+    return "High";
   }
 
   @override
@@ -132,130 +164,130 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
     super.dispose();
   }
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Learn Basic Phrases',
+          'ASL Video',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue[800],
       ),
       body: Center(
-        child: _isError
-            ? Text(
-          'Error loading video. Please check the video file and path.',
-          style: TextStyle(color: Colors.red, fontSize: 16),
-          textAlign: TextAlign.center,
-        )
-            : Column(
+        child: _isInitialized
+            ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _isVideoReady
-                ? AspectRatio(
+            AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
-            )
-                : CircularProgressIndicator(),
-            SizedBox(height: 20),
-            if (_isVideoReady) ...[
-              Text(
-                'To sign "Basic Phrases", observe the video or image (if available) for hand shapes and movements.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-                textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            VideoProgressIndicator(
+              _controller,
+              allowScrubbing: true,
+              colors: VideoProgressColors(
+                playedColor: Colors.blue[800]!,
+                backgroundColor: Colors.grey[300]!,
               ),
-              SizedBox(height: 20),
-              Text(
-                'Tips: Practice slowly and focus on accuracy. Signing is about clarity, not speed.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.blue[900],
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  Text(
+                    _formatDuration(_controller.value.position),
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.replay_10, color: Colors.blue[800]),
+                    onPressed: () {
+                      _controller.seekTo(_controller.value.position - Duration(seconds: 10));
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.blue[800],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.forward_10, color: Colors.blue[800]),
+                    onPressed: () {
+                      _controller.seekTo(_controller.value.position + Duration(seconds: 10));
+                    },
+                  ),
+                  Spacer(),
+                  Text(
+                    _formatDuration(_controller.value.duration),
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(width: 16),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.volume_up, color: Colors.blue[800]),
+                        onPressed: _toggleVolumeSlider,
+                      ),
+                      if (_showVolumeSlider)
+                        Positioned(
+                          top: -120,
+                          child: Column(
+                            children: [
+                              Text(
+                                _getVolumeLabel(),
+                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                              Container(
+                                height: 100,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: RotatedBox(
+                                  quarterTurns: 3,
+                                  child: Slider(
+                                    value: _volume,
+                                    min: 0,
+                                    max: 1,
+                                    activeColor: Colors.blue[800],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _volume = value;
+                                        _controller.setVolume(_volume);
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-            ]
+            ),
           ],
-        ),
-      ),
-      floatingActionButton: _isVideoReady
-          ? FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _controller.value.isPlaying ? _controller.pause() : _controller.play();
-          });
-        },
-        child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-        ),
-      )
-          : null,
-    );
-  }
-}
-
-class ASLPracticeDetail extends StatelessWidget {
-  final String phrase;
-
-  ASLPracticeDetail({required this.phrase});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          phrase,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue[800],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue[50]!, Colors.blue[200]!],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                phrase,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'To sign "$phrase", observe the video or image (if available) for hand shapes and movements.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Tip: Practice slowly and focus on accuracy. Signing is about clarity, not speed.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.blue[900],
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
+        )
+            : CircularProgressIndicator(),
       ),
     );
   }

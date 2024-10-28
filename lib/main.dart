@@ -99,8 +99,8 @@ class SignLanguageHomePage extends StatelessWidget {
             children: <Widget>[
               Spacer(),
               SignLanguageBox(
-                title: 'Practice ASL',
-                icon: Icons.menu_book_outlined,
+                title: 'Practice Sign Language',
+                icon: Icons.video_collection_outlined,
                 color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
                 onTap: () {
                   Navigator.push(
