@@ -2,6 +2,7 @@
     package="com.example.sign_language">
 
     <uses-feature
+
         android:name="android.hardware.camera"
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -11,6 +12,7 @@
     <application
         android:label="Sign Language"
         android:name="${applicationName}"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

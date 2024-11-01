@@ -8,7 +8,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  final int splashDuration = 6;
+  final int splashDuration = 4;
   double _opacity = 0.0;
   double _dividerWidth = 50.0;
   late AnimationController _controller;

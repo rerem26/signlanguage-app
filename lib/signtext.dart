@@ -1,10 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:async';
-import 'package:provider/provider.dart'; // Import the provider package
-
-import 'main.dart'; // Import the main file to access the ThemeProvider
+import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:image/image.dart' as img;
 
 class SignText extends StatefulWidget {
   @override
@@ -15,104 +17,38 @@ class _SignTextState extends State<SignText> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isCameraPermissionGranted = false;
-  bool _isUsingFrontCamera = true; // Initial state using front camera
+  bool _isUsingFrontCamera = true;
   String detectedGesture = "No gesture detected";
-
-  // Extensive list of English and Tagalog sign language words
-  List<String> words = [
-    // English Words
-    "HELLO", "WORLD", "SIGN", "LANGUAGE", "PLEASE", "THANK YOU", "SORRY", "YES",
-    "NO", "GOOD MORNING", "GOOD NIGHT", "HELP", "FAMILY", "FRIEND", "LOVE",
-    "HAPPY", "SAD", "EAT", "DRINK", "WATER", "FOOD", "HOUSE", "SCHOOL",
-    "WORK", "PLAY", "STOP", "GO", "COME", "WAIT", "BATHROOM", "SLEEP",
-    "BOOK", "PEN", "COMPUTER", "PHONE", "MONEY", "SHOP", "STORE", "COLD",
-    "HOT", "RAIN", "SUN", "WIND", "SNOW", "FIRE", "TREE", "FLOWER", "DOG",
-    "CAT", "BIRD", "FISH", "CAR", "BIKE", "BUS", "TRAIN", "AIRPLANE",
-    "FATHER", "MOTHER", "BROTHER", "SISTER", "BABY", "CHILD", "MAN",
-    "WOMAN", "DOCTOR", "NURSE", "TEACHER", "POLICE", "FIREMAN", "LAWYER",
-    "PAINTER", "DANCER", "SINGER", "MUSIC", "MOVIE", "DREAM", "READ",
-    "WRITE", "TALK", "HEAR", "SEE", "SMELL", "TASTE", "TOUCH", "RUN",
-    "WALK", "JUMP", "DANCE", "SIT", "STAND", "OPEN", "CLOSE", "INSIDE",
-    "OUTSIDE", "LEFT", "RIGHT", "UP", "DOWN", "FAST", "SLOW", "BIG", "SMALL",
-    "HUNGRY", "THIRSTY", "TIRED", "BEAUTIFUL", "UGLY", "ANGRY", "LAUGH",
-    "CRY", "SING", "PLAY", "READ", "WRITE", "COUNT", "DRAW", "BUILD",
-    "SWIM", "DRIVE", "FLY", "WALK", "RUN", "CLIMB", "FIGHT", "KISS",
-    "HUG", "SHAKE HANDS", "WAVE", "POINT", "LISTEN", "THINK", "FEEL",
-    "REMEMBER", "FORGET", "DREAM", "IMAGINE", "CREATE", "MAKE", "GIVE",
-    "TAKE", "ASK", "ANSWER", "SHOUT", "WHISPER", "TALK", "SPEAK", "SILENT",
-    "NOISE", "LOUD", "QUIET", "PEACE", "WAR", "SAFE", "DANGER", "FEAR",
-    "BRAVE", "HERO", "VILLAIN", "WIN", "LOSE", "FIGHT", "GUN", "KNIFE",
-    "BOMB", "SWORD", "SHIELD", "BATTLE", "VICTORY", "DEFEAT", "HURT",
-    "BLOOD", "PAIN", "HEAL", "CURE", "SICK", "DISEASE", "MEDICINE", "DOCTOR",
-    "HOSPITAL", "NURSE", "SURGERY", "BANDAGE", "BURN", "CUT", "INJURY",
-    "BITE", "STING", "BREAK", "FIX", "MEND", "REPAIR", "BUILD", "CREATE",
-    "GROW", "PLANT", "SEED", "FLOWER", "TREE", "FOREST", "RIVER", "LAKE",
-    "SEA", "OCEAN", "MOUNTAIN", "HILL", "VALLEY", "DESERT", "JUNGLE",
-    "FIELD", "FARM", "GARDEN", "PARK", "CITY", "TOWN", "VILLAGE", "HOUSE",
-
-    // Tagalog Words
-    "KAMUSTA", "MUNDO", "WIKA", "PAGSASALITA", "PAKISUYO", "SALAMAT",
-    "PAUMANHIN", "OO", "HINDI", "MAGANDANG UMAGA", "MAGANDANG GABI", "TULONG",
-    "PAMILYA", "KAIBIGAN", "PAG-IBIG", "MASAYA", "MALUNGKOT", "KAIN", "INOM",
-    "TUBIG", "PAGKAIN", "BAHAY", "ESKWELA", "TRABAHO", "LARO", "HINTO",
-    "PUNTA", "HALIKA", "MAGHINTAY", "CR", "TULOG", "LIBRO", "PANGSULAT",
-    "KOMPYUTER", "TELEPONO", "PERA", "BILHIN", "TINDIHAN", "MALAMIG", "MAINIT",
-    "ULAN", "ARAW", "HANGIN", "NYEBE", "APOY", "PUNO", "BULAKLAK", "ASO",
-    "PUSA", "IBON", "ISDA", "KOTSE", "BIKE", "BUS", "TREN", "EROPLANO",
-    "AMA", "INA", "KAPATID", "BUNSO", "BATA", "LALAKI", "BABAE", "DOKTOR",
-    "NARS", "GURO", "PULIS", "BOMBERO", "ABOGADO", "PINTOR", "MANANAYAW",
-    "MANG-AAWIT", "MUSIKA", "PELIKULA", "PANAGINIP", "BASA", "SULAT",
-    "USAP", "DINGG", "TINGIN", "AMOY", "LASA", "HAWAK", "TAKBO", "LAKAD",
-    "TALON", "SAYAW", "UPO", "TAYO", "BUKSAN", "ISARA", "LOOB", "LABAS",
-    "KALIWA", "KANAN", "TAAS", "BABA", "MABILIS", "MABAGAL", "MALAKI", "MALIIT",
-    "GUTOM", "UHAW", "PAGOD", "MAGANDA", "PANGIT", "GALIT", "TUMAWA",
-    "UMIYAK", "KANTA", "TUGTOG", "BASA", "SULAT", "BILANG", "GUHIT",
-    "GUMAWA", "LUMANGOY", "MAGMANEHO", "LUMIPAD", "MAGLAKAD", "TUMAKBO",
-    "UMAKYAT", "LUMABAN", "HALIK", "YAKAP", "KAMAY", "KUMAWAY", "ITURO",
-    "MAKINIG", "MAG-ISIP", "DAMA", "ALALAHANIN", "KALIMUTAN", "PANAGINIP",
-    "IMAHINASYON", "LIKHAIN", "GUMAWA", "MAGBIGAY", "KUNIN", "MAGTANONG",
-    "SAGUTIN", "SIGAW", "BULONG", "MAG-USAP", "SALITA", "TAHIMIK",
-    "INGAY", "MALAKAS", "MAHINA", "KAPAYAPAAN", "DIGMAAN", "LIGTAS",
-    "DELIKADO", "TAKOT", "MATAPANG", "BAYANI", "KONTRABIDA", "MANALO",
-    "MATALO", "LUMABAN", "BARIL", "KUTSILYO", "BOMBA", "ESPADA", "KALASAG",
-    "LABAN", "TAGUMPAY", "TALO", "MASAKTAN", "DUGO", "SAKIT", "GUMALING",
-    "LUNAS", "MAYSAKIT", "SAKIT", "GAMOT", "DOKTOR", "OSPITAL", "NARS",
-    "OPERASYON", "BANDAHE", "SUNOG", "HIWA", "SAKIT", "KAGAT", "TALIM",
-    "BALING", "AYUSIN", "TAYO", "AYUSIN", "GUMAWA", "LUMAGO", "HALAMAN",
-    "BINHI", "BULAKLAK", "PUNO", "GUBAT", "ILOG", "DAGAT", "BUNDOK",
-    "BUROL", "LAMBAK", "DISYERTO", "GUBAT", "LUPA", "BUKID", "HARDIN",
-    "PARK", "SYUDAD", "BAYAN", "NAYON", "BAHAY",
-  ];
-
-  int currentWordIndex = 0;
+  Interpreter? _interpreter;
+  List<String> labels = [];
+  List<int>? _outputShape;
 
   @override
   void initState() {
     super.initState();
-    _initCamera();
-    _simulateWordDetection();
+    _initializeResources();
   }
 
-  Future<void> _initCamera() async {
+  Future<void> _initializeResources() async {
     await _requestCameraPermission();
-    if (_isCameraPermissionGranted) {
-      _cameras = await availableCameras();
-      _switchCamera();
+
+    // Load model and labels first
+    bool modelLoaded = await _loadModelAndLabels();
+    if (!modelLoaded) {
+      setState(() {
+        detectedGesture = "Failed to load model or labels";
+      });
+      return;
     }
-  }
 
-  void _switchCamera() async {
-    CameraDescription selectedCamera = _cameras!.firstWhere(
-          (camera) => camera.lensDirection == (_isUsingFrontCamera ? CameraLensDirection.front : CameraLensDirection.back),
-      orElse: () => _cameras!.first,
-    );
-
-    _cameraController = CameraController(
-      selectedCamera,
-      ResolutionPreset.high,
-    );
-    await _cameraController?.initialize();
-    setState(() {});
+    if (_isCameraPermissionGranted) {
+      await _initCamera();
+    } else {
+      print("Camera permission not granted.");
+      setState(() {
+        detectedGesture = "Camera permission not granted";
+      });
+    }
   }
 
   Future<void> _requestCameraPermission() async {
@@ -121,47 +57,184 @@ class _SignTextState extends State<SignText> {
       setState(() {
         _isCameraPermissionGranted = true;
       });
+    } else {
+      print("Camera permission denied.");
+      setState(() {
+        detectedGesture = "Camera permission denied";
+      });
     }
   }
 
-  void _simulateWordDetection() {
-    Timer.periodic(Duration(seconds: 2), (timer) {
-      setState(() {
-        detectedGesture = words[currentWordIndex];
-        currentWordIndex = (currentWordIndex + 1) % words.length;
+  Future<void> _initCamera() async {
+    try {
+      _cameras = await availableCameras();
+      if (_cameras == null || _cameras!.isEmpty) {
+        print("No cameras found.");
+        setState(() {
+          detectedGesture = "No cameras found";
+        });
+        return;
+      }
+
+      final selectedCamera = _cameras!.firstWhere(
+            (camera) => camera.lensDirection == (_isUsingFrontCamera ? CameraLensDirection.front : CameraLensDirection.back),
+        orElse: () => _cameras!.first,
+      );
+
+      _cameraController = CameraController(
+        selectedCamera,
+        ResolutionPreset.medium,
+      );
+
+      await _cameraController!.initialize();
+
+      _cameraController!.startImageStream((CameraImage cameraImage) async {
+        if (_interpreter != null && labels.isNotEmpty && _outputShape != null) {
+          await _runModelOnFrame(cameraImage);
+        } else {
+          print("Model or labels not initialized.");
+        }
       });
-    });
+
+      setState(() {});
+    } catch (e) {
+      print("Failed to initialize camera: $e");
+      setState(() {
+        detectedGesture = "Failed to initialize camera";
+      });
+    }
+  }
+
+  Future<bool> _loadModelAndLabels() async {
+    try {
+      print("Loading TFLite model...");
+      // Check if the model asset exists
+      try {
+        final ByteData data = await rootBundle.load('assets/models.tflite');
+        print("Model asset loaded successfully.");
+      } catch (e) {
+        print("Error loading model asset: $e");
+        return false;
+      }
+
+      _interpreter = await Interpreter.fromAsset('models.tflite');
+      _outputShape = _interpreter?.getOutputTensor(0).shape;
+      if (_outputShape == null) {
+        print("Error: Model output shape is null.");
+        return false;
+      }
+      print("Model loaded with output shape: $_outputShape");
+
+      print("Loading labels...");
+      // Check if the labels asset exists
+      try {
+        final labelData = await rootBundle.loadString('assets/labels.txt');
+        labels = labelData.split('\n').where((label) => label.isNotEmpty).toList();
+        print("Labels loaded successfully.");
+      } catch (e) {
+        print("Error loading labels asset: $e");
+        return false;
+      }
+
+      if (labels.isEmpty) {
+        print("Error: Labels are empty.");
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      print("Error loading model or labels: $e");
+      return false;
+    }
+  }
+
+  Future<void> _runModelOnFrame(CameraImage cameraImage) async {
+    try {
+      if (_interpreter == null || _outputShape == null || labels.isEmpty) {
+        print("Interpreter, output shape, or labels not initialized.");
+        return;
+      }
+
+      final inputImage = _convertCameraImage(cameraImage);
+      var output = List.filled(_outputShape![1], 0.0).reshape(_outputShape!);
+
+      _interpreter?.run(inputImage, output);
+
+      int maxIndex = output[0].indexOf(output[0].reduce((a, b) => a > b ? a : b));
+      setState(() {
+        detectedGesture = labels[maxIndex];
+      });
+    } catch (e) {
+      print("Error during model inference: $e");
+      setState(() {
+        detectedGesture = "Error during model inference";
+      });
+    }
+  }
+
+  Uint8List _convertCameraImage(CameraImage cameraImage) {
+    final width = cameraImage.planes[0].bytesPerRow;
+    final height = cameraImage.height;
+
+    var image = img.Image.fromBytes(
+      width,
+      height,
+      cameraImage.planes[0].bytes,
+      format: img.Format.bgra,
+    );
+
+    var resizedImage = img.copyResize(image, width: 224, height: 224);
+    resizedImage = img.grayscale(resizedImage);
+
+    return Uint8List.fromList(img.encodeJpg(resizedImage));
+  }
+
+  void _switchCamera() async {
+    if (_cameraController != null) {
+      await _cameraController!.stopImageStream();
+      await _cameraController!.dispose();
+      setState(() {
+        _isUsingFrontCamera = !_isUsingFrontCamera;
+      });
+      await _initCamera();
+    }
+  }
+
+  Color _getGestureColor(String gesture) {
+    switch (gesture) {
+      case "Hello":
+        return Colors.orange.shade100;
+      case "Thank you":
+        return Colors.pink.shade100;
+      case "Yes":
+        return Colors.purple.shade200;
+      case "No":
+        return Colors.blue.shade100;
+      case "Good":
+        return Colors.orange.shade200;
+      case "I love you":
+        return Colors.red.shade100;
+      default:
+        return Colors.grey.shade300;
+    }
   }
 
   @override
   void dispose() {
     _cameraController?.dispose();
+    _interpreter?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Sign to Text',
-          style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black),
-        ),
-        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
-        iconTheme: IconThemeData(
-          color: themeProvider.isDarkMode ? Colors.white : Colors.black,
-        ),
+        title: Text('Sign to Text'),
         actions: [
           IconButton(
             icon: Icon(_isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
-            onPressed: () {
-              setState(() {
-                _isUsingFrontCamera = !_isUsingFrontCamera;
-                _switchCamera(); // Switch between front and back camera
-              });
-            },
+            onPressed: _switchCamera,
           )
         ],
       ),
@@ -172,24 +245,17 @@ class _SignTextState extends State<SignText> {
             child: _isCameraPermissionGranted
                 ? (_cameraController != null && _cameraController!.value.isInitialized)
                 ? CameraPreview(_cameraController!)
-                : Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
-              ),
-            )
+                : Center(child: CircularProgressIndicator())
                 : Center(child: Text('Camera permission not granted')),
           ),
           Expanded(
             flex: 1,
             child: Container(
               alignment: Alignment.center,
-              color: themeProvider.isDarkMode ? Colors.black : Colors.grey[300],
+              color: _getGestureColor(detectedGesture),
               child: Text(
-                '$detectedGesture',
-                style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 24,
-                ),
+                detectedGesture,
+                style: TextStyle(fontSize: 24),
               ),
             ),
           ),
