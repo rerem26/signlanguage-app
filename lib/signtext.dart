@@ -82,16 +82,16 @@ class _SignTextState extends State<SignText> {
 
       _cameraController = CameraController(
         selectedCamera,
-        ResolutionPreset.low,
+        _isUsingFrontCamera ? ResolutionPreset.high : ResolutionPreset.medium,
       );
 
       await _cameraController!.initialize();
 
       _cameraController!.startImageStream((CameraImage cameraImage) async {
-        if (_interpreter != null && labels.isNotEmpty && _outputShape != null && _frameSkipCounter % 10 == 0) {
+        if (_interpreter != null && labels.isNotEmpty && _outputShape != null && _frameSkipCounter % 5 == 0) {
           await _runModelOnFrame(cameraImage);
         }
-        _frameSkipCounter++; // Skip some frames to reduce processing load
+        _frameSkipCounter++;
       });
 
       setState(() {});
@@ -134,13 +134,11 @@ class _SignTextState extends State<SignText> {
 
       final inputImage = _convertCameraImage(cameraImage);
 
-      // Reshape input to match the model's expected shape [1, 224, 224, 3]
       var inputTensor = inputImage.reshape([1, 224, 224, 3]);
       var output = List.filled(_outputShape![1], 0.0).reshape(_outputShape!);
 
       _interpreter?.run(inputTensor, output);
 
-      // Ensure output[0] is a List<double> and find the maximum confidence index
       List<double> outputList = List<double>.from(output[0]);
       int maxIndex = outputList.indexWhere((e) => e == outputList.reduce((a, b) => a > b ? a : b));
 
@@ -155,9 +153,7 @@ class _SignTextState extends State<SignText> {
     }
   }
 
-
   Float32List _convertCameraImage(CameraImage cameraImage) {
-    // Convert CameraImage to RGB format using img package
     img.Image rgbImage = img.Image.fromBytes(
       cameraImage.planes[0].bytesPerRow,
       cameraImage.height,
@@ -165,7 +161,6 @@ class _SignTextState extends State<SignText> {
       format: img.Format.bgra,
     );
 
-    // Resize the image to 224x224 and normalize to [0, 1]
     img.Image resizedImage = img.copyResize(rgbImage, width: 224, height: 224);
     Float32List input = Float32List(224 * 224 * 3);
     int index = 0;
@@ -220,26 +215,16 @@ class _SignTextState extends State<SignText> {
               : Center(child: Text('Camera permission not granted')),
           if (detectedGesture != "No gesture detected")
             Positioned(
-              top: 50,
+              bottom: 20,
               left: 20,
+              right: 20,
               child: Container(
-                padding: EdgeInsets.all(8),
-                color: Colors.white.withOpacity(0.8),
+                padding: EdgeInsets.all(12),
+                color: Colors.black.withOpacity(0.7),
                 child: Text(
                   detectedGesture,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          if (detectedGesture != "No gesture detected")
-            Positioned(
-              top: 100,
-              left: 20,
-              child: Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue, width: 2),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
