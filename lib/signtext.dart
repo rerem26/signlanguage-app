@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,7 +19,9 @@ class _SignTextState extends State<SignText> {
   String detectedGesture = "No gesture detected";
   Interpreter? _interpreter;
   List<String> labels = [];
+  List<int>? _inputShape;
   List<int>? _outputShape;
+  int _frameSkipCounter = 0;
 
   @override
   void initState() {
@@ -31,9 +31,8 @@ class _SignTextState extends State<SignText> {
 
   Future<void> _initializeResources() async {
     await _requestCameraPermission();
-
-    // Load model and labels first
     bool modelLoaded = await _loadModelAndLabels();
+
     if (!modelLoaded) {
       setState(() {
         detectedGesture = "Failed to load model or labels";
@@ -83,17 +82,16 @@ class _SignTextState extends State<SignText> {
 
       _cameraController = CameraController(
         selectedCamera,
-        ResolutionPreset.medium,
+        ResolutionPreset.low,
       );
 
       await _cameraController!.initialize();
 
       _cameraController!.startImageStream((CameraImage cameraImage) async {
-        if (_interpreter != null && labels.isNotEmpty && _outputShape != null) {
+        if (_interpreter != null && labels.isNotEmpty && _outputShape != null && _frameSkipCounter % 10 == 0) {
           await _runModelOnFrame(cameraImage);
-        } else {
-          print("Model or labels not initialized.");
         }
+        _frameSkipCounter++; // Skip some frames to reduce processing load
       });
 
       setState(() {});
@@ -107,60 +105,45 @@ class _SignTextState extends State<SignText> {
 
   Future<bool> _loadModelAndLabels() async {
     try {
-      print("Loading TFLite model...");
-      // Check if the model asset exists
-      try {
-        final ByteData data = await rootBundle.load('assets/models.tflite');
-        print("Model asset loaded successfully.");
-      } catch (e) {
-        print("Error loading model asset: $e");
-        return false;
-      }
-
       _interpreter = await Interpreter.fromAsset('models.tflite');
+      _inputShape = _interpreter?.getInputTensor(0).shape;
       _outputShape = _interpreter?.getOutputTensor(0).shape;
-      if (_outputShape == null) {
-        print("Error: Model output shape is null.");
-        return false;
-      }
-      print("Model loaded with output shape: $_outputShape");
 
-      print("Loading labels...");
-      // Check if the labels asset exists
-      try {
-        final labelData = await rootBundle.loadString('assets/labels.txt');
-        labels = labelData.split('\n').where((label) => label.isNotEmpty).toList();
-        print("Labels loaded successfully.");
-      } catch (e) {
-        print("Error loading labels asset: $e");
-        return false;
-      }
+      print("Model Input Shape: $_inputShape");
+      print("Model Output Shape: $_outputShape");
 
-      if (labels.isEmpty) {
-        print("Error: Labels are empty.");
-        return false;
-      }
+      final labelData = await rootBundle.loadString('assets/labels.txt');
+      labels = labelData.split('\n').where((label) => label.isNotEmpty).toList();
 
       return true;
     } catch (e) {
       print("Error loading model or labels: $e");
+      setState(() {
+        detectedGesture = "Failed to load model or labels";
+      });
       return false;
     }
   }
 
   Future<void> _runModelOnFrame(CameraImage cameraImage) async {
     try {
-      if (_interpreter == null || _outputShape == null || labels.isEmpty) {
-        print("Interpreter, output shape, or labels not initialized.");
+      if (_interpreter == null || _outputShape == null || labels.isEmpty || _inputShape == null) {
+        print("Interpreter, input/output shape, or labels not initialized.");
         return;
       }
 
       final inputImage = _convertCameraImage(cameraImage);
+
+      // Reshape input to match the model's expected shape [1, 224, 224, 3]
+      var inputTensor = inputImage.reshape([1, 224, 224, 3]);
       var output = List.filled(_outputShape![1], 0.0).reshape(_outputShape!);
 
-      _interpreter?.run(inputImage, output);
+      _interpreter?.run(inputTensor, output);
 
-      int maxIndex = output[0].indexOf(output[0].reduce((a, b) => a > b ? a : b));
+      // Ensure output[0] is a List<double> and find the maximum confidence index
+      List<double> outputList = List<double>.from(output[0]);
+      int maxIndex = outputList.indexWhere((e) => e == outputList.reduce((a, b) => a > b ? a : b));
+
       setState(() {
         detectedGesture = labels[maxIndex];
       });
@@ -172,21 +155,30 @@ class _SignTextState extends State<SignText> {
     }
   }
 
-  Uint8List _convertCameraImage(CameraImage cameraImage) {
-    final width = cameraImage.planes[0].bytesPerRow;
-    final height = cameraImage.height;
 
-    var image = img.Image.fromBytes(
-      width,
-      height,
+  Float32List _convertCameraImage(CameraImage cameraImage) {
+    // Convert CameraImage to RGB format using img package
+    img.Image rgbImage = img.Image.fromBytes(
+      cameraImage.planes[0].bytesPerRow,
+      cameraImage.height,
       cameraImage.planes[0].bytes,
       format: img.Format.bgra,
     );
 
-    var resizedImage = img.copyResize(image, width: 224, height: 224);
-    resizedImage = img.grayscale(resizedImage);
+    // Resize the image to 224x224 and normalize to [0, 1]
+    img.Image resizedImage = img.copyResize(rgbImage, width: 224, height: 224);
+    Float32List input = Float32List(224 * 224 * 3);
+    int index = 0;
+    for (int y = 0; y < 224; y++) {
+      for (int x = 0; x < 224; x++) {
+        int pixel = resizedImage.getPixel(x, y);
+        input[index++] = img.getRed(pixel) / 255.0;
+        input[index++] = img.getGreen(pixel) / 255.0;
+        input[index++] = img.getBlue(pixel) / 255.0;
+      }
+    }
 
-    return Uint8List.fromList(img.encodeJpg(resizedImage));
+    return input;
   }
 
   void _switchCamera() async {
@@ -197,25 +189,6 @@ class _SignTextState extends State<SignText> {
         _isUsingFrontCamera = !_isUsingFrontCamera;
       });
       await _initCamera();
-    }
-  }
-
-  Color _getGestureColor(String gesture) {
-    switch (gesture) {
-      case "Hello":
-        return Colors.orange.shade100;
-      case "Thank you":
-        return Colors.pink.shade100;
-      case "Yes":
-        return Colors.purple.shade200;
-      case "No":
-        return Colors.blue.shade100;
-      case "Good":
-        return Colors.orange.shade200;
-      case "I love you":
-        return Colors.red.shade100;
-      default:
-        return Colors.grey.shade300;
     }
   }
 
@@ -238,27 +211,38 @@ class _SignTextState extends State<SignText> {
           )
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            flex: 4,
-            child: _isCameraPermissionGranted
-                ? (_cameraController != null && _cameraController!.value.isInitialized)
-                ? CameraPreview(_cameraController!)
-                : Center(child: CircularProgressIndicator())
-                : Center(child: Text('Camera permission not granted')),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              alignment: Alignment.center,
-              color: _getGestureColor(detectedGesture),
-              child: Text(
-                detectedGesture,
-                style: TextStyle(fontSize: 24),
+          _isCameraPermissionGranted
+              ? (_cameraController != null && _cameraController!.value.isInitialized)
+              ? CameraPreview(_cameraController!)
+              : Center(child: CircularProgressIndicator())
+              : Center(child: Text('Camera permission not granted')),
+          if (detectedGesture != "No gesture detected")
+            Positioned(
+              top: 50,
+              left: 20,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                color: Colors.white.withOpacity(0.8),
+                child: Text(
+                  detectedGesture,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          ),
+          if (detectedGesture != "No gesture detected")
+            Positioned(
+              top: 100,
+              left: 20,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 2),
+                ),
+              ),
+            ),
         ],
       ),
     );

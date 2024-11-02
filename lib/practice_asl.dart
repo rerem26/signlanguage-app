@@ -70,7 +70,10 @@ class PracticeASL extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ASLVideoPlayerScreen(videoPath: videoPath),
+                    builder: (context) => ASLVideoPlayerScreen(
+                      videoPath: videoPath,
+                      description: aslPhrases[index],
+                    ),
                   ),
                 );
               },
@@ -110,8 +113,9 @@ class PracticeASL extends StatelessWidget {
 
 class ASLVideoPlayerScreen extends StatefulWidget {
   final String videoPath;
+  final String description;
 
-  ASLVideoPlayerScreen({required this.videoPath});
+  ASLVideoPlayerScreen({required this.videoPath, required this.description});
 
   @override
   _ASLVideoPlayerScreenState createState() => _ASLVideoPlayerScreenState();
@@ -120,8 +124,6 @@ class ASLVideoPlayerScreen extends StatefulWidget {
 class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
-  double _volume = 0.5;
-  bool _showVolumeSlider = false;
 
   @override
   void initState() {
@@ -135,7 +137,6 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
         setState(() {
           _isInitialized = true;
         });
-        _controller.setVolume(_volume);
         _controller.play();
       }).catchError((error) {
         print("Error initializing video: $error");
@@ -143,19 +144,6 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
           SnackBar(content: Text('Error loading video. Please check the file path.')),
         );
       });
-  }
-
-  void _toggleVolumeSlider() {
-    setState(() {
-      _showVolumeSlider = !_showVolumeSlider;
-    });
-  }
-
-  String _getVolumeLabel() {
-    if (_volume == 0) return "Mute";
-    if (_volume <= 0.3) return "Low";
-    if (_volume <= 0.7) return "Medium";
-    return "High";
   }
 
   @override
@@ -236,51 +224,31 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
                     _formatDuration(_controller.value.duration),
                     style: TextStyle(color: Colors.black),
                   ),
-                  SizedBox(width: 16),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.volume_up, color: Colors.blue[800]),
-                        onPressed: _toggleVolumeSlider,
-                      ),
-                      if (_showVolumeSlider)
-                        Positioned(
-                          top: -120,
-                          child: Column(
-                            children: [
-                              Text(
-                                _getVolumeLabel(),
-                                style: TextStyle(color: Colors.white, fontSize: 12),
-                              ),
-                              Container(
-                                height: 100,
-                                width: 30,
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: RotatedBox(
-                                  quarterTurns: 3,
-                                  child: Slider(
-                                    value: _volume,
-                                    min: 0,
-                                    max: 1,
-                                    activeColor: Colors.blue[800],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _volume = value;
-                                        _controller.setVolume(_volume);
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text(
+                    'To perform this sign, start by positioning your hand as shown in the video. Follow along closely to replicate each movement accurately.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Tips: Move slowly and observe the hand orientation. Focus on mastering each gesture for better communication.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blueGrey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
