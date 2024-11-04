@@ -42,6 +42,7 @@ dependencies:
   collection: ^1.16.0
   tflite: ^1.1.2
   path_provider: ^2.0.9
+  logger: ^1.1.0
 
 
 
@@ -126,8 +127,13 @@ flutter:
     - assets/videos/greetings.mp4
     - assets/videos/alphabet.mp4
     - assets/videos/beginner.mp4
-    - assets/models.tflite
-    - assets/labels.txt
+    - assets/models3.tflite
+    - assets/labels3.txt
+    - assets/models2.tflite
+    - assets/labels2.txt
+    - assets/models1.tflite
+    - assets/labels1.txt
+
 
 
 

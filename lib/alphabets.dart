@@ -197,7 +197,7 @@ class AlphabetDetailScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                'Tip: Practice each letter slowly. Focus on hand position and movements as shown.',
+                'Tips: Practice each letter slowly. Focus on hand position and movements as shown.',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.blue[900],

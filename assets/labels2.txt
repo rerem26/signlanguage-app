@@ -1,0 +1,14 @@
+0 i love you
+1 i Love you
+2 Goodbye
+3 GoodBye
+4 No
+5 NO
+6 Yes
+7 yes
+8 hello
+9 Hello
+10 father
+11 Father
+12 mother
+13 Mother
