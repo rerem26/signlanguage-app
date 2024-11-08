@@ -5,13 +5,15 @@ import 'dart:async';
 import 'utils.dart'; // Import your utils class or file
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Voice to Sign Language',
       home: Voice_To_Sign(),
     );
@@ -19,6 +21,8 @@ class MyApp extends StatelessWidget {
 }
 
 class Voice_To_Sign extends StatefulWidget {
+  const Voice_To_Sign({super.key});
+
   @override
   _VoiceToSignState createState() => _VoiceToSignState();
 }
@@ -34,7 +38,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   int _state = 0;
   String _currentLocaleId = 'en-US'; // Default locale to English
 
-  TextEditingController _textController = TextEditingController(); // Controller for text input
+  final TextEditingController _textController = TextEditingController(); // Controller for text input
 
   @override
   void initState() {
@@ -77,7 +81,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         ),
         centerTitle: false,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -114,6 +118,8 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                 children: [
                   Container(
                     margin: const EdgeInsets.fromLTRB(0, 0.0, 0, 0.0),
+                    width: MediaQuery.of(context).size.width,
+                    height: (4 / 3) * MediaQuery.of(context).size.width,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Image(
@@ -125,8 +131,6 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                         height: (4 / 3) * MediaQuery.of(context).size.width,
                       ),
                     ),
-                    width: MediaQuery.of(context).size.width,
-                    height: (4 / 3) * MediaQuery.of(context).size.width,
                   ),
                   const Divider(
                     thickness: 2,
@@ -140,7 +144,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                       reverse: true,
                       physics: const AlwaysScrollableScrollPhysics(),
                       scrollDirection: Axis.horizontal,
-                      child: Container(
+                      child: SizedBox(
                         height: 0.04 * MediaQuery.of(context).size.height,
                         child: Text(
                           _displaytext,
@@ -179,18 +183,18 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                   filled: true,
                   fillColor: Colors.grey[200], // Light grey background for the TextField
                   hintText: 'Enter message',
-                  hintStyle: TextStyle(
+                  hintStyle: const TextStyle(
                     color: Colors.grey, // Subtle hint color
                   ),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.mic, color: Colors.black), // Microphone icon
+                        icon: const Icon(Icons.mic, color: Colors.black), // Microphone icon
                         onPressed: _listen, // Calls the _listen function when pressed
                       ),
                       IconButton(
-                        icon: Icon(Icons.send, color: Colors.blue), // Send icon
+                        icon: const Icon(Icons.send, color: Colors.blue), // Send icon
                         onPressed: _submitMessage, // Submit message when the send button is pressed
                       ),
                     ],
@@ -201,14 +205,14 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: Colors.black, // Purple border when the field is focused
                       width: 2.0,
                     ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Padding inside the TextField
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Padding inside the TextField
                 ),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16.0,
                   color: Colors.black, // Black text color
                 ),
@@ -262,16 +266,16 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
     });
   }
 
-  void translation(String _text) async {
+  void translation(String text) async {
     _displaytext = '';
-    String speechStr = _text.toLowerCase();
+    String speechStr = text.toLowerCase();
 
     List<String> strArray = speechStr.split(" ");
     for (String content in strArray) {
       if (words.contains(content)) {
         String file = content;
         int idx = words.indexOf(content);
-        int _duration = int.parse(words.elementAt(idx + 1));
+        int duration = int.parse(words.elementAt(idx + 1));
 
         setState(() {
           _state += 1;
@@ -280,7 +284,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
           _img = file;
           _ext = '.gif';
         });
-        await Future.delayed(Duration(milliseconds: _duration));
+        await Future.delayed(Duration(milliseconds: duration));
       } else {
         for (var i = 0; i < content.length; i++) {
           if (letters.contains(content[i])) {

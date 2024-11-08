@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: PracticeASL(),
     );
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
 }
 
 class PracticeASL extends StatelessWidget {
-  final List<String> aslPhrases = [
+  static const List<String> aslPhrases = [ // Make this static const
     'Learn Basic Phrases in FSL',
     'Family Signs in FSL',
     'Home Signs in FSL',
@@ -26,12 +28,14 @@ class PracticeASL extends StatelessWidget {
     '40 Conversational Words in ASL',
   ];
 
+  const PracticeASL({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Practice ASL',
+        title: const Text(
+          'Practice FSL',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue[800],
@@ -45,7 +49,7 @@ class PracticeASL extends StatelessWidget {
           ),
         ),
         child: ListView.builder(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           itemCount: aslPhrases.length,
           itemBuilder: (context, index) {
             return GestureDetector(
@@ -115,7 +119,7 @@ class ASLVideoPlayerScreen extends StatefulWidget {
   final String videoPath;
   final String description;
 
-  ASLVideoPlayerScreen({required this.videoPath, required this.description});
+  const ASLVideoPlayerScreen({super.key, required this.videoPath, required this.description});
 
   @override
   _ASLVideoPlayerScreenState createState() => _ASLVideoPlayerScreenState();
@@ -141,7 +145,7 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
       }).catchError((error) {
         print("Error initializing video: $error");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading video. Please check the file path.')),
+          const SnackBar(content: Text('Error loading video. Please check the file path.')),
         );
       });
   }
@@ -163,7 +167,7 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'ASL Video',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -178,7 +182,7 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             VideoProgressIndicator(
               _controller,
               allowScrubbing: true,
@@ -193,13 +197,13 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
                 children: [
                   Text(
                     _formatDuration(_controller.value.position),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     icon: Icon(Icons.replay_10, color: Colors.blue[800]),
                     onPressed: () {
-                      _controller.seekTo(_controller.value.position - Duration(seconds: 10));
+                      _controller.seekTo(_controller.value.position - const Duration(seconds: 10));
                     },
                   ),
                   IconButton(
@@ -216,13 +220,13 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
                   IconButton(
                     icon: Icon(Icons.forward_10, color: Colors.blue[800]),
                     onPressed: () {
-                      _controller.seekTo(_controller.value.position + Duration(seconds: 10));
+                      _controller.seekTo(_controller.value.position + const Duration(seconds: 10));
                     },
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Text(
                     _formatDuration(_controller.value.duration),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ],
               ),
@@ -240,8 +244,8 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     'Tips: Move slowly and observe the hand orientation. Focus on mastering each gesture for better communication.',
                     style: TextStyle(
                       fontSize: 14,
@@ -255,7 +259,7 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
             ),
           ],
         )
-            : CircularProgressIndicator(),
+            : const CircularProgressIndicator(),
       ),
     );
   }

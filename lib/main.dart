@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'alphabets.dart';
 import 'splash_screen.dart';
 import 'signtext.dart';
 import 'learnsign.dart';
 import 'voicelanguage.dart';
-import 'practice_asl.dart'; // Import the practice_asl.dart file
+import 'practice_asl.dart';
+import 'feedback_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -17,14 +21,11 @@ void main() {
 }
 
 class ThemeProvider with ChangeNotifier {
-  bool _isDarkMode = false;
+  bool _isDarkMode = false; // You can remove this if dark mode is not needed.
 
   bool get isDarkMode => _isDarkMode;
 
-  void toggleTheme() {
-    _isDarkMode = !_isDarkMode;
-    notifyListeners();
-  }
+// Remove toggleTheme function if not using dark mode.
 }
 
 class SignLanguageApp extends StatelessWidget {
@@ -34,29 +35,25 @@ class SignLanguageApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sign Language App',
       theme: ThemeData(
-        brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
-        primarySwatch: Colors.grey,
+        brightness: Brightness.light, // Always use light mode
+        primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Roboto',
-        textTheme: TextTheme(),
         appBarTheme: AppBarTheme(
-          color: themeProvider.isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: Colors.transparent, // Make AppBar transparent
+          elevation: 0, // Remove elevation
           iconTheme: IconThemeData(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+            color: Colors.black, // Set icon color to black for light mode
           ),
           titleTextStyle: TextStyle(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+            color: Colors.black, // Set title color to black for light mode
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        buttonTheme: ButtonThemeData(
-          buttonColor: Colors.grey,
-          textTheme: ButtonTextTheme.primary,
-        ),
       ),
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: SplashScreen(), // Start with your splash screen
     );
   }
 }
@@ -70,112 +67,117 @@ class SignLanguageHomePage extends StatelessWidget {
         title: Text(
           'Sign Language App',
           style: TextStyle(
-            color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+            color: Colors.black,
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-            onPressed: () {
-              themeProvider.toggleTheme();
-            },
-          ),
-        ],
+        // Removed the action icon for toggling theme
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: themeProvider.isDarkMode
-                ? [Colors.black, Colors.grey[850]!]
-                : [Colors.white, Colors.grey[300]!],
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.white, Colors.blue[100]!], // Always use light colors
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SizedBox(height: 40), // Adjusted spacing
+                SignLanguageBox(
+                  title: 'Practice Sign Language',
+                  icon: Icons.video_collection_outlined,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PracticeASL()),
+                    );
+                  },
+                ),
+                SizedBox(height: 20),
+                SignLanguageBox(
+                  title: 'Learn Alphabets',
+                  icon: Icons.menu_book_outlined,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Alphabets()),
+                    );
+                  },
+                ),
+                SizedBox(height: 20),
+                SignLanguageBox(
+                  title: 'Quiz',
+                  icon: Icons.quiz_rounded,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QuizScreen()),
+                    );
+                  },
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: SignLanguageBox(
+                        title: 'Sign to Text',
+                        icon: Icons.camera_alt_outlined,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SignText()),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SignLanguageBox(
+                        title: 'Voice to Sign',
+                        icon: Icons.mic_none_outlined,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Voice_To_Sign()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                SignLanguageBox(
+                  title: 'Feedback',
+                  icon: Icons.feedback_outlined,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FeedbackScreen()),
+                    );
+                  },
+                ),
+                SizedBox(height: 50),
+              ],
+            ),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-          child: Column(
-            children: <Widget>[
-              Spacer(),
-              SignLanguageBox(
-                title: 'Practice Sign Language',
-                icon: Icons.video_collection_outlined,
-                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PracticeASL()), // Navigate to PracticeASL screen
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              SignLanguageBox(
-                title: 'Learn Alphabets',
-                icon: Icons.menu_book_outlined,
-                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Alphabets()), // Navigate to the Alphabets screen
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              SignLanguageBox(
-                title: 'Quiz',
-                icon: Icons.quiz_rounded,
-                color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => QuizScreen()),
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: SignLanguageBox(
-                      title: 'Sign to Text',
-                      icon: Icons.camera_alt_outlined,
-                      color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SignText()),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: SignLanguageBox(
-                      title: 'Voice to Sign',
-                      icon: Icons.mic_none_outlined,
-                      color: themeProvider.isDarkMode ? Colors.grey[800]! : Colors.blue[500]!,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Voice_To_Sign()),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Spacer(),
-              Text(
-                'Powered by Intellitech Solutions',
-                style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.blue[100], // Always use light color
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'Powered by Intellitech Solutions',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
@@ -186,56 +188,55 @@ class SignLanguageHomePage extends StatelessWidget {
 class SignLanguageBox extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Color color;
   final VoidCallback onTap;
 
   SignLanguageBox({
     required this.title,
     required this.icon,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      elevation: 8.0,
-      borderRadius: BorderRadius.circular(15),
-      shadowColor: Colors.black45,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          height: 100,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 6,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 36,
-                color: Colors.white,
-              ),
-              SizedBox(height: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blue, width: 2), // Blue border
+        borderRadius: BorderRadius.circular(15),
+        color: Colors.transparent, // Transparent background
+      ),
+      child: Material(
+        elevation: 8.0,
+        borderRadius: BorderRadius.circular(15),
+        shadowColor: Colors.black45,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.transparent, // Ensure the box is transparent
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 36,
+                  color: Colors.blue, // Use a different color for the icon
                 ),
-              ),
-            ],
+                SizedBox(height: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.blue, // Use a different color for the text
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

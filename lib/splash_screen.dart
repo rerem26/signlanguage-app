@@ -3,6 +3,8 @@ import 'dart:async';
 import 'main.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -10,7 +12,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   final int splashDuration = 4;
   double _opacity = 0.0;
-  double _dividerWidth = 50.0;
+  final double _dividerWidth = 50.0;
   late AnimationController _controller;
 
   @override
@@ -20,11 +22,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Initialize the animation controller for scaling and divider animation
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     );
 
     // Start the fade-in animation
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _opacity = 1.0;
       });
@@ -55,18 +57,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           children: [
             AnimatedOpacity(
               opacity: _opacity,
-              duration: Duration(seconds: 5),
+              duration: const Duration(seconds: 5),
               child: Image.asset(
                 'assets/loading2.gif',
                 width: 220,
                 height: 220,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.error_outline, size: 120, color: Colors.white);
+                  return const Icon(Icons.error_outline, size: 120, color: Colors.white);
                 },
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Empowering Connections',
               style: TextStyle(
                 fontSize: 18,
@@ -77,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {

@@ -7,6 +7,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 
 class SignText extends StatefulWidget {
+  const SignText({super.key});
+
   @override
   _SignTextState createState() => _SignTextState();
 }
@@ -203,7 +205,7 @@ class _SignTextState extends State<SignText> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign to Text'),
+        title: const Text('Sign to Text'),
         actions: [
           IconButton(
             icon: Icon(_isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
@@ -221,7 +223,7 @@ class _SignTextState extends State<SignText> {
             alignment: Alignment.center,
             child: Text(
               detectedGesture.isNotEmpty ? detectedGesture : "", // Display only if gesture is accurate
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           Expanded(
@@ -230,8 +232,8 @@ class _SignTextState extends State<SignText> {
                 _isCameraPermissionGranted
                     ? (_cameraController != null && _cameraController!.value.isInitialized)
                     ? CameraPreview(_cameraController!)
-                    : Center(child: CircularProgressIndicator())
-                    : Center(child: Text('Camera permission not granted')),
+                    : const Center(child: CircularProgressIndicator())
+                    : const Center(child: Text('Camera permission not granted')),
               ],
             ),
           ),

@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services" // Apply Google services plugin here
 }
 
 def localProperties = new Properties()
@@ -17,28 +18,26 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '
 
 android {
     namespace 'com.example.sign_language'
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 34 // Update to the latest SDK version
     ndkVersion flutter.ndkVersion
 
     defaultConfig {
         applicationId "com.example.sign_language"
         minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 34 // Match this with your compileSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        // Specify ABI filters for TensorFlow Lite
         ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64" // Include all required architectures
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64" // ABI filters for TensorFlow Lite
         }
 
-        // Enable multiDex if required for large applications
-        multiDexEnabled true
+        multiDexEnabled true // Enable MultiDex for large applications
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     buildTypes {
@@ -49,10 +48,9 @@ android {
         }
     }
 
-    // Configure source sets to include the jniLibs folder
     sourceSets {
         main {
-            jniLibs.srcDirs = ['src/main/jniLibs']
+            jniLibs.srcDirs = ['src/main/jniLibs'] // Include the jniLibs folder
         }
     }
 
@@ -62,6 +60,12 @@ android {
 }
 
 dependencies {
-    implementation 'org.tensorflow:tensorflow-lite:2.9.0' // or the latest stable version
-    implementation 'androidx.multidex:multidex:2.0.1' // Added for multiDex support
+    implementation 'org.tensorflow:tensorflow-lite:2.9.0' // TensorFlow Lite
+    implementation 'androidx.multidex:multidex:2.0.1' // MultiDex support
+
+    implementation platform('com.google.firebase:firebase-bom:33.5.1') // Firebase BoM
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-firestore'
 }
+
+apply plugin: 'com.google.gms.google-services' // Apply Google services plugin
