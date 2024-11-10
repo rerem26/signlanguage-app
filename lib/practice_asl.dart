@@ -18,14 +18,49 @@ class MyApp extends StatelessWidget {
 }
 
 class PracticeASL extends StatelessWidget {
-  static const List<String> aslPhrases = [ // Make this static const
-    'Learn Basic Phrases in FSL',
-    'Family Signs in FSL',
-    'Home Signs in FSL',
-    'Drinks and Food Signs in FSL',
-    'Basic Greetings in FSL',
-    'Alphabet in FSL',
-    '40 Conversational Words in ASL',
+  static const List<Map<String, dynamic>> aslPhrases = [
+    {
+      'title': 'Learn Basic Phrases in FSL',
+      'description': 'Discover essential FSL phrases.',
+      'icon': Icons.language,
+      'color': Colors.blue,
+      'videoPath': 'assets/videos/fsl.mp4',
+    },
+    {
+      'title': 'Family Signs in FSL',
+      'description': 'Learn signs for family members.',
+      'icon': Icons.family_restroom,
+      'color': Colors.green,
+      'videoPath': 'assets/videos/family.mp4',
+    },
+    {
+      'title': 'Home Signs in FSL',
+      'description': 'Everyday signs used at home.',
+      'icon': Icons.home,
+      'color': Colors.purple,
+      'videoPath': 'assets/videos/home.mp4',
+    },
+    {
+      'title': 'Drinks and Food Signs in FSL',
+      'description': 'Learn signs for food and drinks.',
+      'icon': Icons.local_dining,
+      'color': Colors.orange,
+      'videoPath': 'assets/videos/food.mp4',
+    },
+    {
+      'title': 'Basic Greetings in FSL',
+      'description': 'Simple greetings and responses.',
+      'icon': Icons.handshake,
+      'color': Colors.teal,
+      'videoPath': 'assets/videos/greetings.mp4',
+    },
+    {
+      'title': 'Alphabet in FSL',
+      'description': 'Master the FSL alphabet.',
+      'icon': Icons.abc,
+      'color': Colors.red,
+      'videoPath': 'assets/videos/alphabet.mp4',
+    },
   ];
 
   const PracticeASL({super.key});
@@ -52,56 +87,62 @@ class PracticeASL extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           itemCount: aslPhrases.length,
           itemBuilder: (context, index) {
+            final phrase = aslPhrases[index];
+
             return GestureDetector(
               onTap: () {
-                String videoPath = '';
-                if (aslPhrases[index] == 'Learn Basic Phrases in FSL') {
-                  videoPath = 'assets/videos/fsl.mp4';
-                } else if (aslPhrases[index] == 'Family Signs in FSL') {
-                  videoPath = 'assets/videos/family.mp4';
-                } else if (aslPhrases[index] == 'Home Signs in FSL') {
-                  videoPath = 'assets/videos/home.mp4';
-                } else if (aslPhrases[index] == 'Drinks and Food Signs in FSL') {
-                  videoPath = 'assets/videos/food.mp4';
-                } else if (aslPhrases[index] == 'Basic Greetings in FSL') {
-                  videoPath = 'assets/videos/greetings.mp4';
-                } else if (aslPhrases[index] == 'Alphabet in FSL') {
-                  videoPath = 'assets/videos/alphabet.mp4';
-                } else if (aslPhrases[index] == '40 Conversational Words in ASL') {
-                  videoPath = 'assets/videos/beginner.mp4';
-                }
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ASLVideoPlayerScreen(
-                      videoPath: videoPath,
-                      description: aslPhrases[index],
+                      videoPath: phrase['videoPath'],
+                      description: phrase['title'],
                     ),
                   ),
                 );
               },
               child: Card(
+                color: phrase['color'],
                 elevation: 5,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        aslPhrases[index],
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blue[800],
+                      Icon(
+                        phrase['icon'],
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              phrase['title'],
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              phrase['description'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.arrow_forward_ios,
-                        color: Colors.blue[800],
+                        color: Colors.white,
                       ),
                     ],
                   ),
@@ -168,10 +209,11 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'ASL Video',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'FSL Video',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.blue[800],
+        iconTheme: const IconThemeData(color: Colors.white), // Set back button color to white
       ),
       body: Center(
         child: _isInitialized
@@ -249,7 +291,7 @@ class _ASLVideoPlayerScreenState extends State<ASLVideoPlayerScreen> {
                     'Tips: Move slowly and observe the hand orientation. Focus on mastering each gesture for better communication.',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.blueGrey,
+                      color: Colors.black,
                       fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,

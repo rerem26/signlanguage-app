@@ -21,17 +21,14 @@ void main() async {
 }
 
 class ThemeProvider with ChangeNotifier {
-  bool _isDarkMode = false; // You can remove this if dark mode is not needed.
+  bool _isDarkMode = false;
 
   bool get isDarkMode => _isDarkMode;
-
-// Remove toggleTheme function if not using dark mode.
 }
 
 class SignLanguageApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       title: 'Sign Language App',
       theme: ThemeData(
@@ -61,7 +58,6 @@ class SignLanguageApp extends StatelessWidget {
 class SignLanguageHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -71,18 +67,17 @@ class SignLanguageHomePage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        // Removed the action icon for toggling theme
       ),
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.white, Colors.blue[100]!], // Always use light colors
+              colors: [Colors.white, Colors.blue[100]!], // Light blue gradient
             ),
           ),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,7 +164,7 @@ class SignLanguageHomePage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: Container(
-        color: Colors.blue[100], // Always use light color
+        color: Colors.blue[100], // Light color for background
         padding: EdgeInsets.all(16.0),
         child: Text(
           'Powered by Intellitech Solutions',
@@ -216,7 +211,7 @@ class SignLanguageBox extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              color: Colors.transparent, // Ensure the box is transparent
+              color: Colors.transparent,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -224,13 +219,13 @@ class SignLanguageBox extends StatelessWidget {
                 Icon(
                   icon,
                   size: 36,
-                  color: Colors.blue, // Use a different color for the icon
+                  color: Colors.blue,
                 ),
                 SizedBox(height: 6),
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.blue, // Use a different color for the text
+                    color: Colors.blue,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
