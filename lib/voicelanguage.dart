@@ -50,18 +50,12 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   // Initialize speech recognition and check for available locales (languages)
   void _initSpeech() async {
     bool available = await _speechToText.initialize(
-      onStatus: (val) {
-        if (val == "done" && _isListening) {
-          // Restart listening if it stops unexpectedly
-          _restartListening();
-        }
-      },
+      onStatus: (val) => print('onStatus: $val'),
       onError: (val) => print('onError: $val'),
       debugLogging: true,
     );
 
     if (available) {
-      // Get the available locales (languages) and set to Filipino if available
       var locales = await _speechToText.locales();
       for (var locale in locales) {
         if (locale.localeId == 'fil-PH') {
@@ -93,7 +87,6 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         ),
         backgroundColor: Colors.white,
         actions: [
-          // Toggle button to switch between English and Filipino
           PopupMenuButton<String>(
             onSelected: (String value) {
               setState(() {
@@ -173,7 +166,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 30.0), // Increased bottom padding to lift up the TextField
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0), // Increased padding to raise input field
             child: RawKeyboardListener(
               focusNode: FocusNode(),
               onKey: (event) {
@@ -185,44 +178,45 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                 controller: _textController,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Colors.grey[200], // Light grey background for the TextField
+                  fillColor: Colors.grey[200],
                   hintText: 'Enter message',
                   hintStyle: const TextStyle(
-                    color: Colors.grey, // Subtle hint color
+                    color: Colors.grey,
                   ),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.mic, color: Colors.black), // Microphone icon
-                        onPressed: _listen, // Calls the _listen function when pressed
+                        icon: const Icon(Icons.mic_rounded, color: Colors.black),
+                        onPressed: _listen,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.send, color: Colors.blue), // Send icon
-                        onPressed: _submitMessage, // Submit message when the send button is pressed
+                        icon: const Icon(Icons.send, color: Colors.blue),
+                        onPressed: _submitMessage,
                       ),
                     ],
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0), // Rounded corners
-                    borderSide: BorderSide.none, // No border line for a clean look
+                    borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: const BorderSide(
-                      color: Colors.black, // Black border when the field is focused
+                      color: Colors.black,
                       width: 2.0,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0), // Padding inside the TextField
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                 ),
                 style: const TextStyle(
                   fontSize: 16.0,
-                  color: Colors.black, // Black text color
+                  color: Colors.black,
                 ),
               ),
             ),
           ),
+          const SizedBox(height: 20.0), // Additional padding to push the input field up
         ],
       ),
     );
@@ -231,13 +225,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   void _listen() async {
     if (!_isListening) {
       bool available = await _speechToText.initialize(
-        onStatus: (val) {
-          if (val == "done" && _isListening) {
-            Future.delayed(Duration(milliseconds: 500), () {
-              if (_isListening) _restartListening();
-            });
-          }
-        },
+        onStatus: (val) => print('onStatus: $val'),
         onError: (val) => print('onError: $val'),
         debugLogging: true,
       );
@@ -247,42 +235,30 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         _speechToText.listen(
           onResult: (val) => setState(() {
             _text = _cleanText(val.recognizedWords);
-            _displaytext = _text; // Update displayed text in real-time
           }),
           localeId: _currentLocaleId,
-          partialResults: true, // Allow partial results for real-time feedback
-          listenFor: Duration(minutes: 1), // Set a longer timeout
-          pauseFor: Duration(seconds: 3), // Set a pause timeout to keep listening during short pauses
+          listenFor: Duration(seconds: 15), // Extended duration to capture complete input
+          partialResults: false, // Only take the final result to reduce noise
         );
       }
     } else {
       setState(() => _isListening = false);
       _speechToText.stop();
-      translation(_text); // Perform translation once the user stops
+      translation(_text);
       _state = 0;
     }
   }
 
-  void _restartListening() {
-    if (_isListening) {
-      _speechToText.listen(
-        onResult: (val) => setState(() {
-          _text = _cleanText(val.recognizedWords);
-          _displaytext = _text;
-        }),
-        localeId: _currentLocaleId,
-        partialResults: true,
-        listenFor: Duration(minutes: 1),
-        pauseFor: Duration(seconds: 3),
-      );
-    }
-  }
-
   String _cleanText(String input) {
-    // Remove sequences of repeated characters
-    return input.replaceAllMapped(RegExp(r'(\w)\1{2,}'), (Match match) {
+    // Removes repeated characters and filters out isolated characters
+    String result = input.replaceAllMapped(RegExp(r'(\w)\1{2,}'), (match) {
       return match.group(1)!;
     });
+
+    // Remove any single letters that aren’t 'a' or 'i', which are common in Filipino and English
+    result = result.replaceAll(RegExp(r'\b(?![ai])\w\b'), '');
+
+    return result;
   }
 
   void _submitMessage() {
@@ -326,9 +302,10 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
             });
             await Future.delayed(const Duration(milliseconds: 1500));
           } else {
+            String letter = content[i];
             setState(() {
               _state += 1;
-              _displaytext += ' ';
+              _displaytext += letter;
               _path = 'assets/letters/';
               _img = 'space';
               _ext = '.png';
@@ -337,6 +314,14 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
           }
         }
       }
+      setState(() {
+        _state += 1;
+        _displaytext += " ";
+        _path = 'assets/letters/';
+        _img = 'space';
+        _ext = '.png';
+      });
+      await Future.delayed(const Duration(milliseconds: 1000));
     }
   }
 }
