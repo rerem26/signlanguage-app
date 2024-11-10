@@ -50,7 +50,12 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   // Initialize speech recognition and check for available locales (languages)
   void _initSpeech() async {
     bool available = await _speechToText.initialize(
-      onStatus: (val) => print('onStatus: $val'),
+      onStatus: (val) {
+        if (val == "done" && _isListening) {
+          // Restart listening if it stops unexpectedly
+          _restartListening();
+        }
+      },
       onError: (val) => print('onError: $val'),
       debugLogging: true,
     );
@@ -167,9 +172,8 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
               ),
             ),
           ),
-          // This is the section that will be at the bottom
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 30.0), // Increased bottom padding to lift up the TextField
             child: RawKeyboardListener(
               focusNode: FocusNode(),
               onKey: (event) {
@@ -206,7 +210,7 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: const BorderSide(
-                      color: Colors.black, // Purple border when the field is focused
+                      color: Colors.black, // Black border when the field is focused
                       width: 2.0,
                     ),
                   ),
@@ -227,7 +231,13 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
   void _listen() async {
     if (!_isListening) {
       bool available = await _speechToText.initialize(
-        onStatus: (val) => print('onStatus: $val'),
+        onStatus: (val) {
+          if (val == "done" && _isListening) {
+            Future.delayed(Duration(milliseconds: 500), () {
+              if (_isListening) _restartListening();
+            });
+          }
+        },
         onError: (val) => print('onError: $val'),
         debugLogging: true,
       );
@@ -237,32 +247,50 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
         _speechToText.listen(
           onResult: (val) => setState(() {
             _text = _cleanText(val.recognizedWords);
+            _displaytext = _text; // Update displayed text in real-time
           }),
-          localeId: _currentLocaleId, // Use the selected locale
+          localeId: _currentLocaleId,
+          partialResults: true, // Allow partial results for real-time feedback
+          listenFor: Duration(minutes: 1), // Set a longer timeout
+          pauseFor: Duration(seconds: 3), // Set a pause timeout to keep listening during short pauses
         );
       }
     } else {
       setState(() => _isListening = false);
       _speechToText.stop();
-      translation(_text);
+      translation(_text); // Perform translation once the user stops
       _state = 0;
     }
   }
 
+  void _restartListening() {
+    if (_isListening) {
+      _speechToText.listen(
+        onResult: (val) => setState(() {
+          _text = _cleanText(val.recognizedWords);
+          _displaytext = _text;
+        }),
+        localeId: _currentLocaleId,
+        partialResults: true,
+        listenFor: Duration(minutes: 1),
+        pauseFor: Duration(seconds: 3),
+      );
+    }
+  }
+
   String _cleanText(String input) {
-    // This regex replaces sequences of repeated characters with just one character
-    // Example: "mahalllllll" becomes "mahal"
+    // Remove sequences of repeated characters
     return input.replaceAllMapped(RegExp(r'(\w)\1{2,}'), (Match match) {
-      return match.group(1)!; // Replace with the first occurrence of the character
+      return match.group(1)!;
     });
   }
 
   void _submitMessage() {
     setState(() {
       _text = _textController.text;
-      _text = _cleanText(_text); // Clean the text before translating
+      _text = _cleanText(_text);
       translation(_text);
-      _textController.clear(); // Clear the text field after submission
+      _textController.clear();
     });
   }
 
@@ -298,10 +326,9 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
             });
             await Future.delayed(const Duration(milliseconds: 1500));
           } else {
-            String letter = content[i];
             setState(() {
               _state += 1;
-              _displaytext += letter;
+              _displaytext += ' ';
               _path = 'assets/letters/';
               _img = 'space';
               _ext = '.png';
@@ -310,14 +337,6 @@ class _VoiceToSignState extends State<Voice_To_Sign> {
           }
         }
       }
-      setState(() {
-        _state += 1;
-        _displaytext += " ";
-        _path = 'assets/letters/';
-        _img = 'space';
-        _ext = '.png';
-      });
-      await Future.delayed(const Duration(milliseconds: 1000));
     }
   }
 }
