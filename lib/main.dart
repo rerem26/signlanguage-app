@@ -97,7 +97,7 @@ class SignLanguageHomePage extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     SignLanguageBox(
-                      title: 'Learn Alphabets',
+                      title: 'Learn Signs',
                       icon: Icons.menu_book_outlined,
                       onTap: () {
                         Navigator.push(
