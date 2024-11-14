@@ -109,3 +109,5 @@ flutter:
     - assets/nickname.png
     - assets/shortname.png
     - assets/age.png
+    - assets/model.tflite
+    - assets/labels.txt

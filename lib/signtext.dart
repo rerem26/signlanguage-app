@@ -7,8 +7,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 
 class SignText extends StatefulWidget {
-  const SignText({super.key});
-
   @override
   _SignTextState createState() => _SignTextState();
 }
@@ -23,13 +21,9 @@ class _SignTextState extends State<SignText> {
   List<String> labels = [];
   List<int>? _inputShape;
   List<int>? _outputShape;
-  int _noGestureFrames = 0;
-  int noGestureThreshold = 3;
-  double confidenceThreshold = 0.75;
-  List<String> recentGestures = [];
-  final int maxGestureHistory = 5;
-  final int frameSkip = 3; // Process every 3rd frame to reduce computation load
-  int frameCount = 0;
+  int _noGestureFrames = 0; // Counter for frames with no confident gesture
+  final int noGestureThreshold = 15; // Number of frames to wait before clearing text
+  double confidenceThreshold = 0.50; // Lower threshold for more responsive detection
 
   @override
   void initState() {
@@ -90,10 +84,7 @@ class _SignTextState extends State<SignText> {
       await _cameraController!.initialize();
       _cameraController!.startImageStream((CameraImage cameraImage) async {
         if (_interpreter != null && labels.isNotEmpty && _outputShape != null) {
-          frameCount++;
-          if (frameCount % frameSkip == 0) {
-            await _runModelOnFrame(cameraImage);
-          }
+          await _runModelOnFrame(cameraImage);
         }
       });
 
@@ -138,34 +129,24 @@ class _SignTextState extends State<SignText> {
       List<double> outputList = List<double>.from(output[0]);
 
       int maxIndex = outputList.indexWhere((e) => e == outputList.reduce((a, b) => a > b ? a : b));
-      double maxConfidence = outputList[maxIndex];
 
-      if (maxConfidence >= confidenceThreshold) {
-        recentGestures.add(labels[maxIndex]);
-        if (recentGestures.length > maxGestureHistory) {
-          recentGestures.removeAt(0);
-        }
-
-        String averagedGesture = _getMostFrequentGesture(recentGestures);
-
+      if (outputList[maxIndex] >= confidenceThreshold) {
         setState(() {
-          detectedGesture = averagedGesture.replaceAll(RegExp(r'\d'), '').trim();
+          detectedGesture = labels[maxIndex].replaceAll(RegExp(r'\d'), '').trim();
         });
-        _noGestureFrames = 0;
-        confidenceThreshold = 0.65; // Adaptively lower threshold on successful detection
+        _noGestureFrames = 0; // Reset counter when a confident gesture is detected
       } else {
         _noGestureFrames++;
-        confidenceThreshold = 0.75; // Raise threshold when no gestures are detected
+        // Only clear the display if no gesture detected for several frames
         if (_noGestureFrames >= noGestureThreshold) {
           setState(() {
-            detectedGesture = "";
+            detectedGesture = ""; // Clear display when no confident gesture detected
           });
-          recentGestures.clear();
         }
       }
 
       print("Output scores: $outputList");
-      print("Detected gesture: ${labels[maxIndex]} with confidence $maxConfidence");
+      print("Detected gesture: ${labels[maxIndex]} with confidence ${outputList[maxIndex]}");
 
     } catch (e) {
       print("Error during model inference: $e");
@@ -173,14 +154,6 @@ class _SignTextState extends State<SignText> {
         detectedGesture = "Error during model inference";
       });
     }
-  }
-
-  String _getMostFrequentGesture(List<String> gestures) {
-    Map<String, int> frequency = {};
-    for (String gesture in gestures) {
-      frequency[gesture] = (frequency[gesture] ?? 0) + 1;
-    }
-    return frequency.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   }
 
   Float32List _convertCameraImage(CameraImage cameraImage) {
@@ -230,7 +203,7 @@ class _SignTextState extends State<SignText> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign to Text'),
+        title: Text('Sign to Text'),
         actions: [
           IconButton(
             icon: Icon(_isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
@@ -240,14 +213,15 @@ class _SignTextState extends State<SignText> {
       ),
       body: Column(
         children: [
+          // White container to display the detected gesture text
           Container(
             color: Colors.white,
-            height: 100,
+            height: 100, // Adjust this height as necessary
             width: double.infinity,
             alignment: Alignment.center,
             child: Text(
-              detectedGesture.isNotEmpty ? detectedGesture : "",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+              detectedGesture.isNotEmpty ? detectedGesture : "", // Display only if gesture is accurate
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
             ),
           ),
           Expanded(
@@ -256,8 +230,8 @@ class _SignTextState extends State<SignText> {
                 _isCameraPermissionGranted
                     ? (_cameraController != null && _cameraController!.value.isInitialized)
                     ? CameraPreview(_cameraController!)
-                    : const Center(child: CircularProgressIndicator())
-                    : const Center(child: Text('Camera permission not granted')),
+                    : Center(child: CircularProgressIndicator())
+                    : Center(child: Text('Camera permission not granted')),
               ],
             ),
           ),
