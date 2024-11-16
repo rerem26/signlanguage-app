@@ -24,6 +24,8 @@ class _SignTextState extends State<SignText> {
   int _noGestureFrames = 0; // Counter for frames with no confident gesture
   final int noGestureThreshold = 15; // Number of frames to wait before clearing text
   double confidenceThreshold = 0.50; // Lower threshold for more responsive detection
+  int _frameCounter = 0; // Counter for skipping frames to reduce processing load
+  final int _skipFrames = 3; // Process every 3rd frame
 
   @override
   void initState() {
@@ -83,9 +85,11 @@ class _SignTextState extends State<SignText> {
 
       await _cameraController!.initialize();
       _cameraController!.startImageStream((CameraImage cameraImage) async {
-        if (_interpreter != null && labels.isNotEmpty && _outputShape != null) {
+        // Skip frames based on _skipFrames count to reduce processing load
+        if (_frameCounter % _skipFrames == 0) {
           await _runModelOnFrame(cameraImage);
         }
+        _frameCounter++;
       });
 
       setState(() {});
