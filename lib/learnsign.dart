@@ -686,6 +686,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   label: const Text("Retry"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white, // Makes text and icons white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -699,12 +700,14 @@ class _QuizScreenState extends State<QuizScreen> {
                   icon: const Icon(Icons.home),
                   label: const Text("Home"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white, // Makes text and icons white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),
+
               ],
             ),
           ],

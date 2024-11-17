@@ -1,6 +1,10 @@
-0 I love you
-1 Yes
-2 No
-3 Father
-4 Mother
-5 Hello
+0 I LOVE YOU
+1 FATHER
+2 MOTHER
+3 THANK YOU
+4 VICTORY
+5 NO
+6 YES
+7 GOODBYE
+8 DISLIKE
+9 GOODLUCK

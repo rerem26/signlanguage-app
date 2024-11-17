@@ -93,10 +93,6 @@ flutter:
     - assets/videos/greetings.mp4
     - assets/videos/alphabet.mp4
     - assets/videos/beginner.mp4
-    - assets/models3.tflite
-    - assets/labels3.txt
-    - assets/models2.tflite
-    - assets/labels2.txt
     - assets/models1.tflite
     - assets/labels1.txt
     - assets/Hi.png
@@ -111,5 +107,4 @@ flutter:
     - assets/nickname.png
     - assets/shortname.png
     - assets/age.png
-    - assets/model.tflite
-    - assets/labels.txt
+
