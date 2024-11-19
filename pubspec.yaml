@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_animate: ^2.0.0
-  camera: ^0.10.0+2
+  camera: ^0.10.0+4
   permission_handler: ^10.2.0
   provider: ^6.0.3
   http: ^0.13.3
@@ -107,4 +107,8 @@ flutter:
     - assets/nickname.png
     - assets/shortname.png
     - assets/age.png
+    - assets/models3.tflite
+    - assets/labels3.txt
+    - assets/model.json
+
 

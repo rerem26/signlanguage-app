@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -16,15 +17,17 @@ class _SignTextState extends State<SignText> {
   List<CameraDescription>? _cameras;
   bool _isCameraPermissionGranted = false;
   bool _isUsingFrontCamera = true;
-  String detectedGesture = "";
+  String detectedGesture = ""; // Current detected gesture
+  String currentSentence = ""; // Accumulated sentence
+  Set<String> usedWords = {}; // Tracks used words to avoid duplicates
+  Timer? _clearSentenceTimer; // Timer to clear the sentence
   Interpreter? _interpreter;
   List<String> labels = [];
   List<int>? _inputShape;
   List<int>? _outputShape;
-  int _noGestureFrames = 0; // Counter for frames with no confident gesture
-  final int noGestureThreshold = 15; // Number of frames to wait before clearing text
-  double confidenceThreshold = 0.50; // Lower threshold for more responsive detection
-  int _frameCounter = 0; // Counter for skipping frames to reduce processing load
+  double confidenceThreshold = 0.50; // Threshold for responsive gesture detection
+  final int sentenceDisplayDuration = 3; // Time to display the sentence
+  int _frameCounter = 0; // Counter for skipping frames
   final int _skipFrames = 3; // Process every 3rd frame
 
   @override
@@ -57,9 +60,6 @@ class _SignTextState extends State<SignText> {
     final status = await Permission.camera.request();
     setState(() {
       _isCameraPermissionGranted = status.isGranted;
-      if (!status.isGranted) {
-        detectedGesture = "Camera permission denied";
-      }
     });
   }
 
@@ -74,7 +74,10 @@ class _SignTextState extends State<SignText> {
       }
 
       final selectedCamera = _cameras!.firstWhere(
-            (camera) => camera.lensDirection == (_isUsingFrontCamera ? CameraLensDirection.front : CameraLensDirection.back),
+            (camera) => camera.lensDirection ==
+            (_isUsingFrontCamera
+                ? CameraLensDirection.front
+                : CameraLensDirection.back),
         orElse: () => _cameras!.first,
       );
 
@@ -85,7 +88,6 @@ class _SignTextState extends State<SignText> {
 
       await _cameraController!.initialize();
       _cameraController!.startImageStream((CameraImage cameraImage) async {
-        // Skip frames based on _skipFrames count to reduce processing load
         if (_frameCounter % _skipFrames == 0) {
           await _runModelOnFrame(cameraImage);
         }
@@ -120,44 +122,66 @@ class _SignTextState extends State<SignText> {
 
   Future<void> _runModelOnFrame(CameraImage cameraImage) async {
     try {
-      if (_interpreter == null || _outputShape == null || labels.isEmpty || _inputShape == null) {
+      if (_interpreter == null ||
+          _outputShape == null ||
+          labels.isEmpty ||
+          _inputShape == null) {
         print("Interpreter, input/output shape, or labels not initialized.");
         return;
       }
 
       final inputImage = _convertCameraImage(cameraImage);
       var inputTensor = inputImage.reshape([1, 224, 224, 1]);
-      var output = List.generate(5, (_) => List.filled(labels.length, 0.0)).reshape([5, labels.length]);
+      var output = List.generate(5, (_) => List.filled(labels.length, 0.0))
+          .reshape([5, labels.length]);
 
       _interpreter?.run(inputTensor, output);
       List<double> outputList = List<double>.from(output[0]);
 
-      int maxIndex = outputList.indexWhere((e) => e == outputList.reduce((a, b) => a > b ? a : b));
+      int maxIndex = outputList.indexWhere(
+              (e) => e == outputList.reduce((a, b) => a > b ? a : b));
 
       if (outputList[maxIndex] >= confidenceThreshold) {
-        setState(() {
-          detectedGesture = labels[maxIndex].replaceAll(RegExp(r'\d'), '').trim();
-        });
-        _noGestureFrames = 0; // Reset counter when a confident gesture is detected
-      } else {
-        _noGestureFrames++;
-        // Only clear the display if no gesture detected for several frames
-        if (_noGestureFrames >= noGestureThreshold) {
+        String gesture = labels[maxIndex].replaceAll(RegExp(r'\d'), '').trim();
+
+        if (!usedWords.contains(gesture)) {
           setState(() {
-            detectedGesture = ""; // Clear display when no confident gesture detected
+            detectedGesture = gesture;
+
+            // Split the sentence into words and manage word limit
+            List<String> words = currentSentence.split(' ');
+            if (words.length >= 2) {
+              // Replace the entire sentence with the new gesture
+              currentSentence = gesture;
+              usedWords.clear(); // Clear used words
+            } else {
+              // Append the gesture to the current sentence
+              currentSentence += (currentSentence.isEmpty ? "" : " ") + gesture;
+            }
+
+            // Add gesture to used words
+            usedWords.add(gesture);
           });
+          _startClearSentenceTimer(); // Reset the sentence-clearing timer
         }
       }
-
-      print("Output scores: $outputList");
-      print("Detected gesture: ${labels[maxIndex]} with confidence ${outputList[maxIndex]}");
-
     } catch (e) {
       print("Error during model inference: $e");
-      setState(() {
-        detectedGesture = "Error during model inference";
-      });
     }
+  }
+
+  void _startClearSentenceTimer() {
+    // Cancel existing timer
+    _clearSentenceTimer?.cancel();
+
+    // Set up a new timer to clear the sentence
+    _clearSentenceTimer = Timer(Duration(seconds: sentenceDisplayDuration), () {
+      setState(() {
+        currentSentence = ""; // Clear the sentence
+        detectedGesture = ""; // Clear detected gesture
+        usedWords.clear(); // Reset used words for the next sentence
+      });
+    });
   }
 
   Float32List _convertCameraImage(CameraImage cameraImage) {
@@ -176,7 +200,11 @@ class _SignTextState extends State<SignText> {
     for (int y = 0; y < 224; y++) {
       for (int x = 0; x < 224; x++) {
         int pixel = resizedImage.getPixel(x, y);
-        double gray = (img.getRed(pixel) + img.getGreen(pixel) + img.getBlue(pixel)) / 3.0 / 255.0;
+        double gray = (img.getRed(pixel) +
+            img.getGreen(pixel) +
+            img.getBlue(pixel)) /
+            3.0 /
+            255.0;
         input[index++] = gray;
       }
     }
@@ -198,8 +226,10 @@ class _SignTextState extends State<SignText> {
 
   @override
   void dispose() {
+    _cameraController?.stopImageStream();
     _cameraController?.dispose();
     _interpreter?.close();
+    _clearSentenceTimer?.cancel();
     super.dispose();
   }
 
@@ -210,34 +240,31 @@ class _SignTextState extends State<SignText> {
         title: Text('Sign to Text'),
         actions: [
           IconButton(
-            icon: Icon(_isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
+            icon: Icon(
+                _isUsingFrontCamera ? Icons.camera_front : Icons.camera_rear),
             onPressed: _switchCamera,
           )
         ],
       ),
       body: Column(
         children: [
-          // White container to display the detected gesture text
           Container(
             color: Colors.white,
-            height: 100, // Adjust this height as necessary
-            width: double.infinity,
+            height: 100,
             alignment: Alignment.center,
             child: Text(
-              detectedGesture.isNotEmpty ? detectedGesture : "", // Display only if gesture is accurate
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+              currentSentence.isNotEmpty ? currentSentence : "Waiting...",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
           ),
           Expanded(
-            child: Stack(
-              children: [
-                _isCameraPermissionGranted
-                    ? (_cameraController != null && _cameraController!.value.isInitialized)
-                    ? CameraPreview(_cameraController!)
-                    : Center(child: CircularProgressIndicator())
-                    : Center(child: Text('Camera permission not granted')),
-              ],
-            ),
+            child: _isCameraPermissionGranted
+                ? (_cameraController != null &&
+                _cameraController!.value.isInitialized
+                ? CameraPreview(_cameraController!)
+                : Center(child: CircularProgressIndicator()))
+                : Center(child: Text('Camera permission not granted')),
           ),
         ],
       ),
