@@ -15,7 +15,7 @@ dependencies:
   permission_handler: ^10.2.0
   provider: ^6.0.3
   http: ^0.13.3
-  tflite_flutter: ^0.9.0
+  tflite_flutter: ^0.9.5
   tflite_flutter_helper: ^0.2.1
   video_player: ^2.5.1
   image: ^3.0.1
@@ -110,5 +110,7 @@ flutter:
     - assets/models3.tflite
     - assets/labels3.txt
     - assets/model.json
+    - assets/model.tflite
+    - assets/labels.txt
 
 
